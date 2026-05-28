@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–148", patched)
+        self.assertIn("019–149", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1076,7 +1076,9 @@ Monitoring.
                 "merge_ready": False,
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    "gate_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
                 },
+                "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
             },
         }
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -1097,6 +1099,8 @@ Monitoring.
         self.assertIn("merge_ready=false", output)
         self.assertIn("queue_note=Runner backlog ~3h", output)
         self.assertIn("watch=gh run watch 26549293445 --exit-status", output)
+        self.assertIn("briefing_command=", output)
+        self.assertIn("--lfg-gate-watch", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1133,6 +1137,7 @@ Monitoring.
         post_terminal = status.get("post_terminal_commands") or {}
         self.assertIn("closeout", post_terminal)
         self.assertIn("--lfg-gate-watch", status.get("wait_command") or "")
+        self.assertIn("--lfg-gate-watch", status.get("briefing_command") or "")
         monitor_commands = status.get("monitor_commands") or {}
         self.assertIn("gate_watch", monitor_commands)
         self.assertEqual(status.get("verify_run_id"), 1)
@@ -1584,6 +1589,7 @@ Monitoring.
             summary.get("gh_watch_command"),
             "gh run watch 2 --exit-status",
         )
+        self.assertIn("--lfg-gate-watch", summary.get("briefing_command") or "")
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -2940,6 +2946,38 @@ last_verified: 2026-01-01
         )
         self.assertIn("watch=gh run watch 26546235822 --exit-status", line)
 
+    def test_format_briefing_command_stderr_truncates(self) -> None:
+        long_command = "python3 " + ("x" * 100)
+        formatted = mod._format_briefing_command_stderr(long_command)
+        self.assertTrue(formatted.endswith("..."))
+        self.assertLessEqual(len(formatted), 96)
+
+    def test_emit_lfg_strict_exit_stderr_briefing_command(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {
+                "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("briefing_command=", err.getvalue())
+        self.assertIn("--lfg-gate-watch", err.getvalue())
+
+    def test_format_preflight_watch_summary_line_briefing_command(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "briefing_command": (
+                    "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json"
+                ),
+            }
+        )
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
     def test_build_defer_queue_context_severe(self) -> None:
         context = mod._build_defer_queue_context(
             {
@@ -3514,6 +3552,9 @@ last_verified: 2026-01-01
         self.assertIn("expected_after=closeout", line)
         self.assertIn("primary_action=gate_watch", line)
         self.assertIn("watch_recommended=true", line)
+        self.assertIn("watch=gh run watch 2 --exit-status", line)
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
 
     def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
         line = mod._format_preflight_watch_poll_line(

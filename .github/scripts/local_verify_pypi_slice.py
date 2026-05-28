@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "148"
+PLAN_TRACK_CAP = "149"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1735,6 +1735,17 @@ def _format_preflight_watch_poll_line(
                 parts.append(f"expected_after={after_action}")
         if briefing.get("watch_recommended"):
             parts.append("watch_recommended=true")
+        gh_watch_command = _extract_gh_watch_command(briefing)
+        if gh_watch_command is not None:
+            parts.append(f"watch={gh_watch_command}")
+        command = briefing.get("command")
+        if isinstance(command, str) and command:
+            parts.append(
+                f"briefing_command={_format_briefing_command_stderr(command)}"
+            )
+        sha_gap_short = _format_briefing_sha_gap_short(briefing)
+        if sha_gap_short is not None:
+            parts.append(f"sha_gap={sha_gap_short}")
     return " ".join(parts)
 
 
@@ -1836,6 +1847,11 @@ def _format_preflight_watch_summary_line(
     gh_watch_command = summary.get("gh_watch_command")
     if isinstance(gh_watch_command, str) and gh_watch_command:
         parts.append(f"watch={gh_watch_command}")
+    briefing_command = summary.get("briefing_command")
+    if isinstance(briefing_command, str) and briefing_command:
+        parts.append(
+            f"briefing_command={_format_briefing_command_stderr(briefing_command)}"
+        )
     return " ".join(parts)
 
 
@@ -1933,6 +1949,7 @@ def _watch_lfg_preflight_defer(
         command = briefing.get("command")
         if isinstance(command, str) and command:
             summary["wait_command"] = command
+            summary["briefing_command"] = command
         monitor_commands = briefing.get("monitor_commands")
         if isinstance(monitor_commands, dict) and monitor_commands:
             summary["monitor_commands"] = monitor_commands
@@ -2387,6 +2404,12 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         gh_watch_command = _extract_gh_watch_command(briefing)
         if gh_watch_command is not None:
             line = f"{line} watch={gh_watch_command}"
+        command = briefing.get("command")
+        if isinstance(command, str) and command:
+            line = (
+                f"{line} briefing_command="
+                f"{_format_briefing_command_stderr(command)}"
+            )
     print(line, file=sys.stderr)
 
 
@@ -2547,6 +2570,12 @@ def _mirror_queue_backlog_note(
             target["queue_backlog_note"] = note
             return
     target.pop("queue_backlog_note", None)
+
+
+def _format_briefing_command_stderr(command: str) -> str:
+    if len(command) <= 96:
+        return command
+    return f"{command[:93]}..."
 
 
 def _format_queue_backlog_note_stderr(note: str) -> str:
@@ -2908,8 +2937,10 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         command = briefing.get("command")
         if isinstance(command, str) and command:
             status["wait_command"] = command
+            status["briefing_command"] = command
         else:
             status.pop("wait_command", None)
+            status.pop("briefing_command", None)
         monitor_commands = briefing.get("monitor_commands")
         if isinstance(monitor_commands, dict) and monitor_commands:
             status["monitor_commands"] = monitor_commands
@@ -2966,6 +2997,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("watch_recommended", None)
         status.pop("post_terminal_commands", None)
         status.pop("wait_command", None)
+        status.pop("briefing_command", None)
         status.pop("monitor_commands", None)
         status.pop("verify_run_id", None)
         status.pop("fc_run_id", None)
