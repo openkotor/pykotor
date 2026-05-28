@@ -496,7 +496,65 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–178", patched)
+        self.assertIn("019–179", patched)
+
+    def test_lfg_flat_field_stderr_count(self) -> None:
+        self.assertEqual(
+            mod._lfg_flat_field_stderr_count(
+                {
+                    "lfg_flat_field_values": {
+                        "primary_action": "gate_watch",
+                        "verify_run_id": 1,
+                        "watch_recommended": True,
+                    },
+                }
+            ),
+            3,
+        )
+        self.assertEqual(
+            mod._lfg_flat_field_stderr_count(
+                {
+                    "primary_action": "gate_watch",
+                    "verify_run_id": 99,
+                }
+            ),
+            2,
+        )
+
+    def test_lfg_briefing_mirror_stderr_parts_flat_fields(self) -> None:
+        joined = " ".join(
+            mod._lfg_briefing_mirror_stderr_parts(
+                {
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 2,
+                    "watch_recommended": True,
+                    "lfg_flat_field_values": {
+                        "primary_action": "gate_watch",
+                        "fc_run_id": 2,
+                        "watch_recommended": True,
+                    },
+                }
+            )
+        )
+        self.assertIn("flat_fields=3", joined)
+        self.assertIn("primary_action=gate_watch", joined)
+
+    def test_emit_lfg_strict_exit_stderr_flat_fields(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "defer",
+            "primary_action": "gate_watch",
+            "fc_run_id": 26549293445,
+            "lfg_agent_briefing": {"action": "defer"},
+            "lfg_flat_field_values": {
+                "briefing_action": "defer",
+                "primary_action": "gate_watch",
+                "fc_run_id": 26549293445,
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("flat_fields=3", err.getvalue())
 
     def test_build_lfg_flat_field_values_omits_empty(self) -> None:
         values = mod._build_lfg_flat_field_values(

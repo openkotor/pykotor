@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "178"
+PLAN_TRACK_CAP = "179"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1902,6 +1902,10 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     if drift_fields:
         parts.append(f"drift_fields={','.join(drift_fields)}")
 
+    flat_count = _lfg_flat_field_stderr_count(status)
+    if flat_count:
+        parts.append(f"flat_fields={flat_count}")
+
     return parts
 
 
@@ -3142,6 +3146,13 @@ def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
             continue
         values[key] = value
     return values
+
+
+def _lfg_flat_field_stderr_count(source: dict[str, Any]) -> int:
+    flat_values = source.get("lfg_flat_field_values")
+    if isinstance(flat_values, dict):
+        return len(flat_values)
+    return len(_build_lfg_flat_field_values(source))
 
 
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
