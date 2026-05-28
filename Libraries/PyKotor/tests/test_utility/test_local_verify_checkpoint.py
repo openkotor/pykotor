@@ -496,7 +496,61 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–182", patched)
+        self.assertIn("019–183", patched)
+
+    def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        first = mod._format_preflight_watch_poll_line(1, first_status)
+        self.assertIn("flat_keys=", first)
+        self.assertNotIn("flat_unchanged=true", first)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        second = mod._format_preflight_watch_poll_line(
+            2,
+            dict(status),
+            previous_flat_keys=previous,
+        )
+        self.assertNotIn("flat_keys=", second)
+        self.assertNotIn("flat_fields=", second)
+        self.assertIn("flat_unchanged=true", second)
+
+    def test_format_preflight_watch_poll_line_flat_keys_changed(self) -> None:
+        base: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "primary_action": "gate_watch",
+            "fc_run_id": 2,
+            "lfg_flat_field_keys_present": ["primary_action", "fc_run_id"],
+            "lfg_flat_field_values": {
+                "primary_action": "gate_watch",
+                "fc_run_id": 2,
+            },
+        }
+        poll_status = dict(base)
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            poll_status,
+            previous_flat_keys=["primary_action"],
+        )
+        self.assertIn("flat_keys=", line)
+        self.assertNotIn("flat_unchanged=true", line)
 
     def test_lfg_flat_field_keys_present_stderr(self) -> None:
         keys = mod._lfg_flat_field_keys_present_stderr(

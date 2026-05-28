@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "182"
+PLAN_TRACK_CAP = "183"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1917,6 +1917,7 @@ def _format_preflight_watch_poll_line(
     status: dict[str, Any],
     *,
     watch_label: str = "preflight",
+    previous_flat_keys: list[str] | None = None,
 ) -> str:
     reason = status.get("lfg_defer_reason") or "deferred"
     label = _watch_label_display(watch_label)
@@ -1966,7 +1967,21 @@ def _format_preflight_watch_poll_line(
             parts.append("queue_warn=true")
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
-        parts.extend(_lfg_briefing_mirror_stderr_parts(status))
+        mirror_parts = _lfg_briefing_mirror_stderr_parts(status)
+        current_flat_keys = _lfg_flat_field_keys_present_stderr(status)
+        if (
+            previous_flat_keys is not None
+            and current_flat_keys
+            and previous_flat_keys == current_flat_keys
+        ):
+            mirror_parts = [
+                part
+                for part in mirror_parts
+                if not part.startswith("flat_keys=")
+                and not part.startswith("flat_fields=")
+            ]
+            mirror_parts.append("flat_unchanged=true")
+        parts.extend(mirror_parts)
     return " ".join(parts)
 
 
@@ -2208,6 +2223,7 @@ def _watch_lfg_preflight_defer(
     status: dict[str, Any] = {}
     status["preflight_watch_started_monotonic"] = time.monotonic()
     watch_result = "proceed"
+    previous_flat_keys: list[str] | None = None
     while True:
         polls += 1
         prefetch_result = None
@@ -2244,9 +2260,18 @@ def _watch_lfg_preflight_defer(
                     snapshot[f"{prefix}_queued_hours"] = round(float(queued), 2)
         history.append(snapshot)
         print(
-            _format_preflight_watch_poll_line(polls, status, watch_label=watch_label),
+            _format_preflight_watch_poll_line(
+                polls,
+                status,
+                watch_label=watch_label,
+                previous_flat_keys=previous_flat_keys,
+            ),
             file=sys.stderr,
         )
+        if status.get("lfg_deferred"):
+            current_flat_keys = _lfg_flat_field_keys_present_stderr(status)
+            if current_flat_keys:
+                previous_flat_keys = current_flat_keys
         if not still_deferred:
             watch_result = "proceed"
             break
