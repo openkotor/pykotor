@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "122"
+PLAN_TRACK_CAP = "123"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2228,6 +2228,16 @@ def _build_drift_refresh_commands(status: dict[str, Any]) -> dict[str, str]:
     return commands
 
 
+def _build_drift_expected_after(
+    refresh_commands: dict[str, str],
+) -> dict[str, str] | None:
+    for key in ("closeout", "refresh_dry_run", "gate", "preflight"):
+        command = refresh_commands.get(key)
+        if isinstance(command, str) and command:
+            return {"action": key, "command": command}
+    return None
+
+
 def _defer_preflight_watch_recommended(status: dict[str, Any]) -> bool:
     defer_reason = status.get("lfg_defer_reason")
     if not isinstance(defer_reason, str) or not defer_reason:
@@ -2470,9 +2480,14 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "refresh_commands": refresh_commands,
             "wait_recommended": bool(drift.get("wait_recommended")),
         }
+        expected_after = _build_drift_expected_after(refresh_commands)
+        if expected_after is not None:
+            briefing["expected_after_terminal"] = expected_after
         _attach_active_run_refs(status, briefing)
         if drift.get("wait_recommended"):
             briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+            briefing["primary_action"] = "gate_watch"
+            briefing["queue_context"] = _build_defer_queue_context(status)
         return briefing
     return {}
 
@@ -2506,16 +2521,48 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
                 parts.append("queue_warn=true")
         expected_after = briefing.get("expected_after_terminal")
         if isinstance(expected_after, dict):
-            action = expected_after.get("action")
-            if isinstance(action, str) and action:
-                parts.append(f"expected_after={action}")
+            after_action = expected_after.get("action")
+            if isinstance(after_action, str) and after_action:
+                parts.append(f"expected_after={after_action}")
         sha_gap = briefing.get("sha_gap")
         if isinstance(sha_gap, dict):
             short = sha_gap.get("short")
             if isinstance(short, str) and short:
                 parts.append(f"sha_gap={short}")
-    if action == "investigate_ci_drift" and briefing.get("wait_recommended"):
+    if briefing.get("action") == "investigate_ci_drift" and briefing.get("wait_recommended"):
         parts.append("wait=true")
+        if briefing.get("primary_action"):
+            parts.append(f"primary_action={briefing['primary_action']}")
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            max_queued = queue_context.get("max_queued_hours")
+            if isinstance(max_queued, (int, float)):
+                parts.append(f"queued={float(max_queued):.1f}h")
+            if queue_context.get("queue_backlog_severe"):
+                parts.append("queue_backlog=true")
+            elif queue_context.get("queue_backlog_warning"):
+                parts.append("queue_warn=true")
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict):
+            after_action = expected_after.get("action")
+            if isinstance(after_action, str) and after_action:
+                parts.append(f"expected_after={after_action}")
+        drift = briefing.get("drift")
+        if isinstance(drift, dict):
+            fields = drift.get("fields") or []
+            field_names = [
+                str(entry.get("field"))
+                for entry in fields
+                if isinstance(entry, dict) and entry.get("field")
+            ]
+            if field_names:
+                parts.append(f"drift_fields={','.join(field_names)}")
+    elif briefing.get("action") == "investigate_ci_drift":
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict):
+            after_action = expected_after.get("action")
+            if isinstance(after_action, str) and after_action:
+                parts.append(f"expected_after={after_action}")
         drift = briefing.get("drift")
         if isinstance(drift, dict):
             fields = drift.get("fields") or []

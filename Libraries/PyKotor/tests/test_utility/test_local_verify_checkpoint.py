@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–122", patched)
+        self.assertIn("019–123", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1314,6 +1314,10 @@ Monitoring.
         self.assertIn("26543899770", briefing["notes"][0])
         self.assertFalse(briefing["wait_recommended"])
         self.assertIn("closeout", briefing["refresh_commands"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "closeout")
         drift = briefing["drift"]
         self.assertEqual(len(drift["fields"]), 1)
 
@@ -1349,8 +1353,56 @@ Monitoring.
         self.assertTrue(briefing["wait_recommended"])
         self.assertIn("--lfg-gate-watch", briefing["command"])
         self.assertEqual(briefing["fc_run_id"], 26547437912)
+        self.assertEqual(briefing["primary_action"], "gate_watch")
         self.assertIn("gate_watch", briefing["refresh_commands"])
         self.assertNotIn("closeout", briefing["refresh_commands"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "refresh_dry_run")
+        self.assertIn("queue_context", briefing)
+
+    def test_emit_drift_briefing_stderr_wait_expected_after(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "investigate_ci_drift",
+                    "wait_recommended": True,
+                    "primary_action": "gate_watch",
+                    "queue_context": {"max_queued_hours": 0.5},
+                    "expected_after_terminal": {
+                        "action": "refresh_dry_run",
+                        "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+                    },
+                    "drift": {
+                        "fields": [
+                            {"field": "forward_commits_run_id"},
+                            {"field": "verify_run_id"},
+                        ],
+                    },
+                    "fc_run_id": 26549293445,
+                    "monitor_commands": {
+                        "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("expected_after=refresh_dry_run", output)
+        self.assertIn("drift_fields=forward_commits_run_id,verify_run_id", output)
+        self.assertIn("queued=0.5h", output)
+
+    def test_build_drift_expected_after_prefers_closeout(self) -> None:
+        expected = mod._build_drift_expected_after(
+            {
+                "refresh_dry_run": "dry-run",
+                "closeout": "closeout",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "closeout")
 
     def test_build_proceed_hint_investigate_drift_active_fc(self) -> None:
         hint = mod._build_proceed_hint(

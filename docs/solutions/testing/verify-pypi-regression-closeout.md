@@ -85,6 +85,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Defer **`queue_context`** and **`primary_action: gate_watch`**; fc_active_pending sets **`queue_backlog_note`** when queued ≥ 4h (plan 120).
 - Gate-watch poll stderr uses **`gate watch`** label; defer stderr **`queued=X.Xh`** from **`max_queued_hours`**; watch summary includes **`next_hint`** (plan 121).
 - Defer briefing **`expected_after_terminal`** (prefetch_gate → gate → preflight); **`queue_backlog_warning`** at ≥2h with stderr **`queue_warn=true`**; watch summary **`reason=start->end`** (plan 122).
+- **`investigate_ci_drift`** briefing adds **`expected_after_terminal`**, **`primary_action: gate_watch`**, and **`queue_context`** on wait paths; stderr **`expected_after=refresh_dry_run`** (plan 123).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -163,16 +164,16 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 | Workflow | Run | Notes |
 |----------|-----|-------|
-| Verify PyPI | [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) |  Check trigger success on `8916e2f`|
-| Forward Commits | [26548176325](https://github.com/OpenKotOR/PyKotor/actions/runs/26548176325) |  merge queued on `573c9d4`|
+| Verify PyPI | [26549547772](https://github.com/OpenKotOR/PyKotor/actions/runs/26549547772) |  Check trigger queued on `ca61ce8`|
+| Forward Commits | [26549293445](https://github.com/OpenKotOR/PyKotor/actions/runs/26549293445) |  merge queued on `ca61ce8`|
 
 ## Plans index
 
-Plans **019–122** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–123** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 118)
+## Last CI check (plan 123)
 
-**2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26548176325](https://github.com/OpenKotOR/PyKotor/actions/runs/26548176325) **queued** on `573c9d4`.
+**2026-05-27:** verify [26549547772](https://github.com/OpenKotOR/PyKotor/actions/runs/26549547772) **queued** on `ca61ce8`; FC [26549293445](https://github.com/OpenKotOR/PyKotor/actions/runs/26549293445) **queued** on `ca61ce8`.
 
 ## Track status (plan 106)
 
