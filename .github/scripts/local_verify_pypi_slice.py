@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "154"
+PLAN_TRACK_CAP = "155"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1761,6 +1761,9 @@ def _format_preflight_watch_poll_line(
         notes_count = _format_briefing_notes_count(briefing)
         if notes_count is not None:
             parts.append(f"notes={notes_count}")
+        merge_ready = _format_briefing_merge_ready(briefing)
+        if merge_ready is not None:
+            parts.append(f"merge_ready={merge_ready}")
     return " ".join(parts)
 
 
