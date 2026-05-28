@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–133", patched)
+        self.assertIn("019–134", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1065,6 +1065,7 @@ Monitoring.
                 "active_runs": ["fc"],
                 "gh_watch_summary": "fc:26549293445",
                 "queue_context": {"max_queued_hours": 1.5},
+                "watch_recommended": True,
                 "fc_run_id": 26549293445,
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
@@ -1079,6 +1080,15 @@ Monitoring.
         self.assertIn("active_runs=fc", output)
         self.assertIn("gh_watch=fc:26549293445", output)
         self.assertIn("queued=1.5h", output)
+
+    def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {"watch_recommended": True},
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("watch_recommended=true", err.getvalue())
 
     def test_apply_lfg_agent_briefing_gh_watch_summary(self) -> None:
         status: dict[str, Any] = {
@@ -1099,6 +1109,7 @@ Monitoring.
         expected_after = status.get("expected_after_terminal") or {}
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(status.get("primary_action"), "gate_watch")
+        self.assertTrue(status.get("watch_recommended"))
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1507,6 +1518,7 @@ Monitoring.
         expected_after = summary.get("expected_after_terminal") or {}
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(summary.get("primary_action"), "gate_watch")
+        self.assertTrue(summary.get("watch_recommended"))
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -3419,6 +3431,17 @@ last_verified: 2026-01-01
         )
         self.assertIn("expected_after=closeout", line)
         self.assertIn("primary_action=gate_watch", line)
+
+    def test_format_preflight_watch_summary_line_watch_recommended(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "watch_recommended": True,
+            }
+        )
+        self.assertIn("watch_recommended=true", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

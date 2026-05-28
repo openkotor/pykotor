@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "133"
+PLAN_TRACK_CAP = "134"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1791,6 +1791,8 @@ def _format_preflight_watch_summary_line(
     primary_action = summary.get("primary_action")
     if isinstance(primary_action, str) and primary_action:
         parts.append(f"primary_action={primary_action}")
+    if summary.get("watch_recommended"):
+        parts.append("watch_recommended=true")
     return " ".join(parts)
 
 
@@ -1878,6 +1880,8 @@ def _watch_lfg_preflight_defer(
         primary_action = briefing.get("primary_action")
         if isinstance(primary_action, str) and primary_action:
             summary["primary_action"] = primary_action
+        if briefing.get("watch_recommended"):
+            summary["watch_recommended"] = True
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2263,6 +2267,8 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
             gh_watch = _format_gh_watch_summary(briefing)
         if gh_watch:
             line = f"{line} gh_watch={gh_watch}"
+        if briefing.get("watch_recommended"):
+            line = f"{line} watch_recommended=true"
     print(line, file=sys.stderr)
 
 
@@ -2671,6 +2677,10 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["primary_action"] = primary_action
         else:
             status.pop("primary_action", None)
+        if briefing.get("watch_recommended"):
+            status["watch_recommended"] = True
+        else:
+            status.pop("watch_recommended", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2678,6 +2688,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("queue_context", None)
         status.pop("expected_after_terminal", None)
         status.pop("primary_action", None)
+        status.pop("watch_recommended", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
