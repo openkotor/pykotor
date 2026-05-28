@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "185"
+PLAN_TRACK_CAP = "186"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2068,161 +2068,6 @@ def _format_preflight_watch_summary_line(
     return " ".join(parts)
 
 
-def _mirror_lfg_flat_fields(
-    source: dict[str, Any],
-    target: dict[str, Any],
-    *,
-    clear_missing: bool = False,
-    queue_context_filter: bool = False,
-) -> None:
-    active_runs = source.get("active_runs")
-    if isinstance(active_runs, list) and active_runs:
-        target["active_runs"] = list(active_runs)
-    elif clear_missing:
-        target.pop("active_runs", None)
-
-    gh_watch = source.get("gh_watch_summary")
-    if isinstance(gh_watch, str) and gh_watch:
-        target["gh_watch_summary"] = gh_watch
-    elif clear_missing:
-        target.pop("gh_watch_summary", None)
-
-    queue_context = source.get("queue_context")
-    queue_context_present = isinstance(queue_context, dict) and queue_context
-    if queue_context_present:
-        if not queue_context_filter or (
-            queue_context.get("max_queued_hours") is not None
-            or queue_context.get("queue_backlog")
-        ):
-            target["queue_context"] = queue_context
-        elif clear_missing:
-            target.pop("queue_context", None)
-            queue_context = None
-    elif clear_missing:
-        target.pop("queue_context", None)
-    _mirror_queue_context_fields(
-        target,
-        queue_context if isinstance(queue_context, dict) else None,
-    )
-    _mirror_queue_backlog_note(
-        target,
-        queue_context if isinstance(queue_context, dict) else None,
-    )
-
-    expected_after = source.get("expected_after_terminal")
-    if isinstance(expected_after, dict) and expected_after:
-        target["expected_after_terminal"] = expected_after
-    elif clear_missing:
-        target.pop("expected_after_terminal", None)
-
-    primary_action = source.get("primary_action")
-    if isinstance(primary_action, str) and primary_action:
-        target["primary_action"] = primary_action
-    elif clear_missing:
-        target.pop("primary_action", None)
-
-    watch_recommended = source.get("watch_recommended")
-    if watch_recommended:
-        target["watch_recommended"] = True
-    elif clear_missing:
-        target.pop("watch_recommended", None)
-
-    post_terminal = source.get("post_terminal_commands")
-    if isinstance(post_terminal, dict) and post_terminal:
-        target["post_terminal_commands"] = post_terminal
-    elif clear_missing:
-        target.pop("post_terminal_commands", None)
-
-    command = source.get("briefing_command") or source.get("wait_command") or source.get("command")
-    if isinstance(command, str) and command:
-        target["wait_command"] = command
-        target["briefing_command"] = command
-    elif clear_missing:
-        target.pop("wait_command", None)
-        target.pop("briefing_command", None)
-
-    monitor_commands = source.get("monitor_commands")
-    if isinstance(monitor_commands, dict) and monitor_commands:
-        target["monitor_commands"] = monitor_commands
-    elif clear_missing:
-        target.pop("monitor_commands", None)
-
-    for field in _LFG_RUN_REF_FIELDS:
-        value = source.get(field)
-        if value is not None:
-            target[field] = value
-        elif clear_missing:
-            target.pop(field, None)
-
-    blocked = source.get("blocked")
-    if isinstance(blocked, str) and blocked:
-        target["blocked"] = blocked
-    elif clear_missing:
-        target.pop("blocked", None)
-
-    action = source.get("briefing_action")
-    if not isinstance(action, str) or not action:
-        action = source.get("action")
-    if isinstance(action, str) and action:
-        target["briefing_action"] = action
-    elif clear_missing:
-        target.pop("briefing_action", None)
-
-    reason = source.get("briefing_reason")
-    if not isinstance(reason, str) or not reason:
-        reason = source.get("reason")
-    if isinstance(reason, str) and reason:
-        target["briefing_reason"] = reason
-    elif clear_missing:
-        target.pop("briefing_reason", None)
-
-    if clear_missing:
-        _mirror_briefing_notes(target, source)
-        _mirror_briefing_merge_ready(target, source)
-        _mirror_briefing_sha_gap(target, source)
-    else:
-        notes = source.get("briefing_notes")
-        if not isinstance(notes, list) or not notes:
-            notes = source.get("notes")
-        if isinstance(notes, list) and notes:
-            target["briefing_notes"] = list(notes)
-        if "briefing_merge_ready" in source:
-            target["briefing_merge_ready"] = source["briefing_merge_ready"]
-        elif "merge_ready" in source:
-            target["briefing_merge_ready"] = bool(source["merge_ready"])
-        sha_gap = source.get("sha_gap")
-        if isinstance(sha_gap, dict) and sha_gap:
-            target["sha_gap"] = sha_gap
-            short = sha_gap.get("short")
-            if isinstance(short, str) and short:
-                target["sha_gap_short"] = short
-        sha_gap_short = source.get("sha_gap_short")
-        if isinstance(sha_gap_short, str) and sha_gap_short:
-            target["sha_gap_short"] = sha_gap_short
-
-    gh_watch_command = source.get("gh_watch_command")
-    if not isinstance(gh_watch_command, str) or not gh_watch_command:
-        gh_watch_command = _extract_gh_watch_command(source)
-    if isinstance(gh_watch_command, str) and gh_watch_command:
-        target["gh_watch_command"] = gh_watch_command
-    elif clear_missing:
-        target.pop("gh_watch_command", None)
-
-    wait_recommended = source.get("wait_recommended")
-    if wait_recommended:
-        target["wait_recommended"] = True
-    elif clear_missing:
-        target.pop("wait_recommended", None)
-
-    ci_drift = source.get("ci_drift")
-    if not isinstance(ci_drift, dict) or not ci_drift:
-        ci_drift = source.get("drift")
-    if isinstance(ci_drift, dict) and ci_drift:
-        target["ci_drift"] = ci_drift
-    elif clear_missing:
-        target.pop("ci_drift", None)
-
-
 def _mirror_preflight_watch_summary_from_status(
     status: dict[str, Any],
     summary: dict[str, Any],
@@ -3216,6 +3061,161 @@ def _mirror_briefing_notes(
         target["briefing_notes"] = list(notes)
     else:
         target.pop("briefing_notes", None)
+
+
+def _mirror_lfg_flat_fields(
+    source: dict[str, Any],
+    target: dict[str, Any],
+    *,
+    clear_missing: bool = False,
+    queue_context_filter: bool = False,
+) -> None:
+    active_runs = source.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        target["active_runs"] = list(active_runs)
+    elif clear_missing:
+        target.pop("active_runs", None)
+
+    gh_watch = source.get("gh_watch_summary")
+    if isinstance(gh_watch, str) and gh_watch:
+        target["gh_watch_summary"] = gh_watch
+    elif clear_missing:
+        target.pop("gh_watch_summary", None)
+
+    queue_context = source.get("queue_context")
+    queue_context_present = isinstance(queue_context, dict) and queue_context
+    if queue_context_present:
+        if not queue_context_filter or (
+            queue_context.get("max_queued_hours") is not None
+            or queue_context.get("queue_backlog")
+        ):
+            target["queue_context"] = queue_context
+        elif clear_missing:
+            target.pop("queue_context", None)
+            queue_context = None
+    elif clear_missing:
+        target.pop("queue_context", None)
+    _mirror_queue_context_fields(
+        target,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+    _mirror_queue_backlog_note(
+        target,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+
+    expected_after = source.get("expected_after_terminal")
+    if isinstance(expected_after, dict) and expected_after:
+        target["expected_after_terminal"] = expected_after
+    elif clear_missing:
+        target.pop("expected_after_terminal", None)
+
+    primary_action = source.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        target["primary_action"] = primary_action
+    elif clear_missing:
+        target.pop("primary_action", None)
+
+    watch_recommended = source.get("watch_recommended")
+    if watch_recommended:
+        target["watch_recommended"] = True
+    elif clear_missing:
+        target.pop("watch_recommended", None)
+
+    post_terminal = source.get("post_terminal_commands")
+    if isinstance(post_terminal, dict) and post_terminal:
+        target["post_terminal_commands"] = post_terminal
+    elif clear_missing:
+        target.pop("post_terminal_commands", None)
+
+    command = source.get("briefing_command") or source.get("wait_command") or source.get("command")
+    if isinstance(command, str) and command:
+        target["wait_command"] = command
+        target["briefing_command"] = command
+    elif clear_missing:
+        target.pop("wait_command", None)
+        target.pop("briefing_command", None)
+
+    monitor_commands = source.get("monitor_commands")
+    if isinstance(monitor_commands, dict) and monitor_commands:
+        target["monitor_commands"] = monitor_commands
+    elif clear_missing:
+        target.pop("monitor_commands", None)
+
+    for field in _LFG_RUN_REF_FIELDS:
+        value = source.get(field)
+        if value is not None:
+            target[field] = value
+        elif clear_missing:
+            target.pop(field, None)
+
+    blocked = source.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        target["blocked"] = blocked
+    elif clear_missing:
+        target.pop("blocked", None)
+
+    action = source.get("briefing_action")
+    if not isinstance(action, str) or not action:
+        action = source.get("action")
+    if isinstance(action, str) and action:
+        target["briefing_action"] = action
+    elif clear_missing:
+        target.pop("briefing_action", None)
+
+    reason = source.get("briefing_reason")
+    if not isinstance(reason, str) or not reason:
+        reason = source.get("reason")
+    if isinstance(reason, str) and reason:
+        target["briefing_reason"] = reason
+    elif clear_missing:
+        target.pop("briefing_reason", None)
+
+    if clear_missing:
+        _mirror_briefing_notes(target, source)
+        _mirror_briefing_merge_ready(target, source)
+        _mirror_briefing_sha_gap(target, source)
+    else:
+        notes = source.get("briefing_notes")
+        if not isinstance(notes, list) or not notes:
+            notes = source.get("notes")
+        if isinstance(notes, list) and notes:
+            target["briefing_notes"] = list(notes)
+        if "briefing_merge_ready" in source:
+            target["briefing_merge_ready"] = source["briefing_merge_ready"]
+        elif "merge_ready" in source:
+            target["briefing_merge_ready"] = bool(source["merge_ready"])
+        sha_gap = source.get("sha_gap")
+        if isinstance(sha_gap, dict) and sha_gap:
+            target["sha_gap"] = sha_gap
+            short = sha_gap.get("short")
+            if isinstance(short, str) and short:
+                target["sha_gap_short"] = short
+        sha_gap_short = source.get("sha_gap_short")
+        if isinstance(sha_gap_short, str) and sha_gap_short:
+            target["sha_gap_short"] = sha_gap_short
+
+    gh_watch_command = source.get("gh_watch_command")
+    if not isinstance(gh_watch_command, str) or not gh_watch_command:
+        gh_watch_command = _extract_gh_watch_command(source)
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        target["gh_watch_command"] = gh_watch_command
+    elif clear_missing:
+        target.pop("gh_watch_command", None)
+
+    wait_recommended = source.get("wait_recommended")
+    if wait_recommended:
+        target["wait_recommended"] = True
+    elif clear_missing:
+        target.pop("wait_recommended", None)
+
+    ci_drift = source.get("ci_drift")
+    if not isinstance(ci_drift, dict) or not ci_drift:
+        ci_drift = source.get("drift")
+    if isinstance(ci_drift, dict) and ci_drift:
+        target["ci_drift"] = ci_drift
+    elif clear_missing:
+        target.pop("ci_drift", None)
 
 
 def _format_briefing_notes_count(briefing: dict[str, Any]) -> str | None:
