@@ -496,7 +496,37 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–179", patched)
+        self.assertIn("019–180", patched)
+
+    def test_should_attach_lfg_mirror_stderr_flat_fields_only(self) -> None:
+        self.assertTrue(
+            mod._should_attach_lfg_mirror_stderr(
+                {
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 1,
+                }
+            )
+        )
+        self.assertFalse(mod._should_attach_lfg_mirror_stderr({}))
+
+    def test_emit_lfg_strict_exit_stderr_top_level_flat_only(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "defer",
+            "primary_action": "gate_watch",
+            "fc_run_id": 26549293445,
+            "lfg_flat_field_values": {
+                "briefing_action": "defer",
+                "primary_action": "gate_watch",
+                "fc_run_id": 26549293445,
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("flat_fields=3", output)
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("fc_run=26549293445", output)
 
     def test_lfg_flat_field_stderr_count(self) -> None:
         self.assertEqual(
