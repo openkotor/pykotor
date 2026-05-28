@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–190", patched)
+        self.assertIn("019–191", patched)
 
     def test_lfg_flat_field_mirror_stderr_parts(self) -> None:
         parts = mod._lfg_flat_field_mirror_stderr_parts(
@@ -522,7 +522,8 @@ Monitoring.
             watch_label="gate",
         )
         self.assertIn("unchanged_flat_keys_polls=3", line)
-        self.assertIn("watch_heartbeat_polls=12", line)
+        self.assertIn("heartbeat_every=12", line)
+        self.assertNotIn("watch_heartbeat_polls=", line)
 
     def test_format_preflight_watch_summary_line_omits_watch_heartbeat_without_unchanged(
         self,
@@ -536,6 +537,7 @@ Monitoring.
             },
         )
         self.assertNotIn("watch_heartbeat_polls=", line)
+        self.assertNotIn("heartbeat_every=", line)
 
     def test_build_preflight_watch_summary_watch_heartbeat_polls(self) -> None:
         status: dict[str, Any] = {
@@ -652,7 +654,8 @@ Monitoring.
             }
         )
         self.assertIn("unchanged_flat_keys_polls=2", line)
-        self.assertIn("watch_heartbeat_polls=12", line)
+        self.assertIn("heartbeat_every=12", line)
+        self.assertNotIn("watch_heartbeat_polls=", line)
 
     def test_format_preflight_watch_summary_line_flat_keys_heartbeat_polls(self) -> None:
         line = mod._format_preflight_watch_summary_line(
