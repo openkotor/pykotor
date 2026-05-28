@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–149", patched)
+        self.assertIn("019–150", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3555,6 +3555,43 @@ last_verified: 2026-01-01
         self.assertIn("watch=gh run watch 2 --exit-status", line)
         self.assertIn("briefing_command=", line)
         self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_preflight_watch_poll_line_queue_note(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "verify queued 5.2h; FC queued 5.3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 5.2},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 5.3},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("queue_note=verify queued 5.2h", line)
+
+    def test_format_gate_watch_poll_line_queue_note(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("queue_note=Runner backlog ~3h", line)
 
     def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
         line = mod._format_preflight_watch_poll_line(
