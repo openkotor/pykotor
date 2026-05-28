@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–158", patched)
+        self.assertIn("019–159", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3866,16 +3866,47 @@ last_verified: 2026-01-01
         self.assertEqual(line.count("gh_watch=verify:1,fc:2"), 1)
 
     def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
-        line = mod._format_preflight_watch_poll_line(
-            1,
-            {
-                "lfg_defer_reason": "unchanged_active_runs",
-                "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
-                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
             },
-        )
-        self.assertIn("queued=2.5h", line)
-        self.assertIn("queue_warn=true", line)
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("queued=2.5h", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queued=2.5h"), 1)
+        self.assertIn("queue_warn=true", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queue_warn=true"), 1)
+
+    def test_format_gate_watch_poll_line_queue_backlog_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 5.2},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 5.3},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("queue_backlog=true", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queue_backlog=true"), 1)
+        self.assertIn("queued=5.3h", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queued=5.3h"), 1)
 
     def test_format_preflight_watch_summary_line_includes_next_hint(self) -> None:
         line = mod._format_preflight_watch_summary_line(
