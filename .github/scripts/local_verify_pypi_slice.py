@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "114"
+PLAN_TRACK_CAP = "115"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2121,6 +2121,45 @@ def _attach_active_run_refs(status: dict[str, Any], briefing: dict[str, Any]) ->
         briefing[f"{prefix}_status"] = _run_display_label(run)
 
 
+def _build_ci_drift_detail(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
+    doc_validation = (
+        status.get("doc_validation") if isinstance(status.get("doc_validation"), dict) else {}
+    )
+    active_runs: list[str] = []
+    for key, label in (("verify_pypi", "verify"), ("forward_commits", "fc")):
+        run = status.get(key)
+        if isinstance(run, dict) and "error" not in run and _is_active_run(run):
+            active_runs.append(label)
+    return {
+        "fields": list(doc_validation.get("drift") or []),
+        "status_drift": list(doc_validation.get("status_drift") or []),
+        "ci_drift_note": checkpoint.get("ci_drift_note"),
+        "active_runs": active_runs,
+        "wait_recommended": bool(active_runs),
+    }
+
+
+def _build_drift_refresh_commands(status: dict[str, Any]) -> dict[str, str]:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    commands: dict[str, str] = {
+        "refresh_dry_run": f"{script} --lfg-refresh --dry-run",
+        "preflight_retry": f"{script} --lfg-preflight --json",
+        "preflight_watch": f"{script} --lfg-preflight-watch --json",
+    }
+    verify = status.get("verify_pypi")
+    forward_commits = status.get("forward_commits")
+    verify_terminal = isinstance(verify, dict) and "error" not in verify and not _is_active_run(verify)
+    fc_terminal = (
+        isinstance(forward_commits, dict)
+        and "error" not in forward_commits
+        and not _is_active_run(forward_commits)
+    )
+    if verify_terminal and fc_terminal:
+        commands["closeout"] = f"{script} --lfg-closeout"
+    return commands
+
+
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     command = briefing.get("command")
@@ -2248,14 +2287,26 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
     proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
     if proceed_reason == "investigate_ci_drift":
-        return {
+        drift = _build_ci_drift_detail(status)
+        refresh_commands = _build_drift_refresh_commands(status)
+        command = proceed_hint
+        if drift.get("wait_recommended"):
+            command = refresh_commands["preflight_watch"]
+        briefing = {
             "action": "investigate_ci_drift",
-            "command": proceed_hint,
+            "command": command,
             "reason": "investigate_ci_drift",
             "notes": extra_notes,
             "merge_ready": False,
             "blocked": None,
+            "drift": drift,
+            "refresh_commands": refresh_commands,
+            "wait_recommended": bool(drift.get("wait_recommended")),
         }
+        _attach_active_run_refs(status, briefing)
+        if drift.get("wait_recommended"):
+            briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+        return briefing
     return {}
 
 
@@ -2272,6 +2323,18 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     parts = [f"action={action}"]
     if action == "defer" and briefing.get("reason"):
         parts.append(f"reason={briefing['reason']}")
+    if action == "investigate_ci_drift" and briefing.get("wait_recommended"):
+        parts.append("wait=true")
+        drift = briefing.get("drift")
+        if isinstance(drift, dict):
+            fields = drift.get("fields") or []
+            field_names = [
+                str(entry.get("field"))
+                for entry in fields
+                if isinstance(entry, dict) and entry.get("field")
+            ]
+            if field_names:
+                parts.append(f"drift_fields={','.join(field_names)}")
     if "exit_code" in briefing:
         parts.append(f"exit={briefing['exit_code']}")
     if briefing.get("blocked"):
@@ -2738,6 +2801,12 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     if proceed_reason == "monitoring_complete":
         return f"{script} --lfg-gate  # monitoring docs synced; track complete"
     if proceed_reason == "investigate_ci_drift":
+        drift = _build_ci_drift_detail(status)
+        if drift.get("wait_recommended"):
+            return (
+                f"{script} --lfg-preflight-watch --json  "
+                "# wait for active runs before refresh dry-run"
+            )
         return f"{script} --lfg-refresh --dry-run"
     if proceed_reason in _DISPATCH_PROCEED_REASONS:
         return f"{script} --lfg-refresh"

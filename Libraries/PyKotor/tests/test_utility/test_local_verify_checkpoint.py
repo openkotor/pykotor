@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–114", patched)
+        self.assertIn("019–115", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1289,10 +1289,99 @@ Monitoring.
                 "proceed_reason": "investigate_ci_drift",
                 "ci_drift_note": "FC run 26543899770 vs doc 26365648344",
             },
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 26365648344,
+                        "live": 26543899770,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "completed",
+                "conclusion": "success",
+            },
         }
         briefing = mod._build_lfg_agent_briefing(status)
         self.assertEqual(briefing["action"], "investigate_ci_drift")
         self.assertIn("26543899770", briefing["notes"][0])
+        self.assertFalse(briefing["wait_recommended"])
+        self.assertIn("closeout", briefing["refresh_commands"])
+        drift = briefing["drift"]
+        self.assertEqual(len(drift["fields"]), 1)
+
+    def test_build_lfg_agent_briefing_investigate_drift_active_fc(self) -> None:
+        status: dict[str, Any] = {
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+            "checkpoint": {
+                "proceed_reason": "investigate_ci_drift",
+                "ci_drift_note": "FC run 26547437912 vs doc 26547345351",
+            },
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 26547345351,
+                        "live": 26547437912,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 26547437912,
+                "status": "queued",
+                "conclusion": "",
+                "url": "https://example.com/runs/26547437912",
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertTrue(briefing["wait_recommended"])
+        self.assertIn("--lfg-preflight-watch", briefing["command"])
+        self.assertEqual(briefing["fc_run_id"], 26547437912)
+        self.assertIn("preflight_watch", briefing["monitor_commands"])
+        self.assertNotIn("closeout", briefing["refresh_commands"])
+
+    def test_build_proceed_hint_investigate_drift_active_fc(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+            },
+            blocked=None,
+        )
+        self.assertIn("--lfg-preflight-watch", hint)
+
+    def test_emit_investigate_drift_stderr_wait_and_fields(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "investigate_ci_drift",
+                    "wait_recommended": True,
+                    "drift": {
+                        "fields": [{"field": "forward_commits_run_id"}],
+                    },
+                    "fc_run_id": 26547437912,
+                    "monitor_commands": {
+                        "watch_fc_run": "gh run watch 26547437912 --exit-status",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("drift_fields=forward_commits_run_id", output)
+        self.assertIn("fc_run=26547437912", output)
 
     def test_emit_lfg_agent_briefing_stderr(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
