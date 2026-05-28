@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "189"
+PLAN_TRACK_CAP = "190"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1902,12 +1902,7 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     if drift_fields:
         parts.append(f"drift_fields={','.join(drift_fields)}")
 
-    flat_count = _lfg_flat_field_stderr_count(status)
-    if flat_count:
-        parts.append(f"flat_fields={flat_count}")
-    flat_keys = _lfg_flat_field_keys_present_stderr(status)
-    if flat_keys:
-        parts.append(f"flat_keys={','.join(flat_keys)}")
+    parts.extend(_lfg_flat_field_mirror_stderr_parts(status))
 
     return parts
 
@@ -1991,6 +1986,8 @@ def _format_preflight_watch_poll_line(
             mirror_parts.append("flat_unchanged=true")
         elif flat_keys_unchanged and emit_flat_keys_heartbeat:
             mirror_parts.append("flat_keys_heartbeat=1")
+        if flat_keys_unchanged and flat_keys_heartbeat_polls > 0:
+            mirror_parts.append(f"heartbeat_every={flat_keys_heartbeat_polls}")
         parts.extend(mirror_parts)
     return " ".join(parts)
 
@@ -3288,6 +3285,17 @@ def _lfg_flat_field_stderr_count(source: dict[str, Any]) -> int:
     if isinstance(flat_values, dict):
         return len(flat_values)
     return len(_build_lfg_flat_field_values(source))
+
+
+def _lfg_flat_field_mirror_stderr_parts(source: dict[str, Any]) -> list[str]:
+    parts: list[str] = []
+    flat_count = _lfg_flat_field_stderr_count(source)
+    if flat_count:
+        parts.append(f"flat_fields={flat_count}")
+    flat_keys = _lfg_flat_field_keys_present_stderr(source)
+    if flat_keys:
+        parts.append(f"flat_keys={','.join(flat_keys)}")
+    return parts
 
 
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
