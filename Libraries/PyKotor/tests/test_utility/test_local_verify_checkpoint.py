@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–199", patched)
+        self.assertIn("019–200", patched)
 
     def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
         status: dict[str, Any] = {
@@ -829,6 +829,7 @@ Monitoring.
         )
         self.assertNotIn("flat_keys_heartbeat_polls=", line)
         self.assertNotIn("flat_hb=", line)
+        self.assertNotIn("flat_hb_total=", line)
 
     def test_format_preflight_watch_poll_line_flat_keys_heartbeat(self) -> None:
         status: dict[str, Any] = {
@@ -920,7 +921,8 @@ Monitoring.
             },
             watch_label="gate",
         )
-        self.assertIn("flat_hb=1", line)
+        self.assertIn("flat_hb_total=1", line)
+        self.assertNotIn("flat_hb=", line)
         self.assertNotIn("flat_keys_heartbeat_polls=", line)
 
     def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
