@@ -496,7 +496,16 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–207", patched)
+        self.assertIn("019–208", patched)
+
+    def test_preflight_watch_summary_flat_stderr_parts_watch_heartbeat_alias(self) -> None:
+        parts = mod._preflight_watch_summary_flat_stderr_parts(
+            {
+                "flat_unchanged": 2,
+                "watch_heartbeat_polls": 12,
+            }
+        )
+        self.assertIn("heartbeat_every=12", " ".join(parts))
 
     def test_resolve_preflight_flat_keys_heartbeats_prefers_status(self) -> None:
         history = [{"flat_hb_total": 2}]
