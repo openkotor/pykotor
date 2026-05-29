@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "204"
+PLAN_TRACK_CAP = "205"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2144,16 +2144,8 @@ def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) 
     return unchanged >= interval
 
 
-def _format_preflight_watch_summary_line(
-    summary: dict[str, Any],
-    *,
-    watch_label: str = "preflight",
-) -> str:
-    result = summary.get("lfg_preflight_watch_result") or "unknown"
-    polls = summary.get("polls", 0)
-    duration = summary.get("watch_duration_sec")
-    duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
-    parts = [f"result={result} polls={polls} duration={duration_text}"]
+def _preflight_watch_summary_flat_stderr_parts(summary: dict[str, Any]) -> list[str]:
+    parts: list[str] = []
     unchanged_flat = _preflight_unchanged_flat_keys_polls(summary)
     if unchanged_flat:
         parts.append(f"flat_unchanged={unchanged_flat}")
@@ -2173,6 +2165,20 @@ def _format_preflight_watch_summary_line(
         heartbeats = _preflight_flat_keys_heartbeat_count(summary)
         if heartbeats > 0:
             parts.append(f"flat_hb_total={heartbeats}")
+    return parts
+
+
+def _format_preflight_watch_summary_line(
+    summary: dict[str, Any],
+    *,
+    watch_label: str = "preflight",
+) -> str:
+    result = summary.get("lfg_preflight_watch_result") or "unknown"
+    polls = summary.get("polls", 0)
+    duration = summary.get("watch_duration_sec")
+    duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
+    parts = [f"result={result} polls={polls} duration={duration_text}"]
+    parts.extend(_preflight_watch_summary_flat_stderr_parts(summary))
     start_reason = summary.get("start_defer_reason")
     end_reason = summary.get("end_defer_reason")
     if (
