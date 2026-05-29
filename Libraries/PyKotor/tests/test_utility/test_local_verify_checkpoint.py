@@ -496,7 +496,11 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–208", patched)
+        self.assertIn("019–209", patched)
+
+    def test_preflight_max_flat_unchanged_resolver(self) -> None:
+        self.assertEqual(mod._preflight_max_flat_unchanged({"max_flat_unchanged": 2}), 2)
+        self.assertEqual(mod._preflight_max_flat_unchanged({}), 0)
 
     def test_preflight_watch_summary_flat_stderr_parts_watch_heartbeat_alias(self) -> None:
         parts = mod._preflight_watch_summary_flat_stderr_parts(
