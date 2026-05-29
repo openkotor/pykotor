@@ -496,7 +496,27 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–206", patched)
+        self.assertIn("019–207", patched)
+
+    def test_resolve_preflight_flat_keys_heartbeats_prefers_status(self) -> None:
+        history = [{"flat_hb_total": 2}]
+        status: dict[str, Any] = {"preflight_flat_keys_heartbeats": 3}
+        self.assertEqual(mod._resolve_preflight_flat_keys_heartbeats(status, history), 3)
+
+    def test_resolve_preflight_flat_keys_heartbeats_history_fallback(self) -> None:
+        history = [{"flat_hb": 1}, {"flat_hb_total": 2}]
+        self.assertEqual(mod._resolve_preflight_flat_keys_heartbeats({}, history), 2)
+
+    def test_resolve_preflight_unchanged_flat_keys_polls_prefers_count(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action"]},
+            {"flat_keys": ["primary_action"], "flat_unchanged": 1},
+        ]
+        self.assertEqual(mod._resolve_preflight_unchanged_flat_keys_polls(history), 1)
+
+    def test_resolve_preflight_unchanged_flat_keys_polls_max_streak_fallback(self) -> None:
+        history = [{"flat_unchanged": 2}, {"flat_unchanged": 1}]
+        self.assertEqual(mod._resolve_preflight_unchanged_flat_keys_polls(history), 2)
 
     def test_build_preflight_watch_summary_flat_unchanged_max_streak_fallback(self) -> None:
         status: dict[str, Any] = {

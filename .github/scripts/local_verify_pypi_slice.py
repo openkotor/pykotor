@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "206"
+PLAN_TRACK_CAP = "207"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2059,6 +2059,23 @@ def _max_preflight_flat_hb_total(history: list[dict[str, Any]]) -> int:
     return max_hb
 
 
+def _resolve_preflight_flat_keys_heartbeats(
+    status: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> int:
+    heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
+    if heartbeats > 0:
+        return heartbeats
+    return _max_preflight_flat_hb_total(history)
+
+
+def _resolve_preflight_unchanged_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    unchanged = _count_unchanged_preflight_flat_keys_polls(history)
+    if unchanged > 0:
+        return unchanged
+    return _max_preflight_flat_unchanged_streak(history)
+
+
 def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     history = list(status.get("preflight_watch_history") or [])
     started = status.get("preflight_watch_started_monotonic")
@@ -2071,13 +2088,9 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         first_reason = history[0].get("lfg_defer_reason")
         last_reason = history[-1].get("lfg_defer_reason")
     watch_heartbeat_polls = int(status.get("preflight_watch_heartbeat_polls") or 0)
-    flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
-    if flat_keys_heartbeats <= 0:
-        flat_keys_heartbeats = _max_preflight_flat_hb_total(history)
-    unchanged_flat_keys_polls = _count_unchanged_preflight_flat_keys_polls(history)
+    flat_keys_heartbeats = _resolve_preflight_flat_keys_heartbeats(status, history)
+    unchanged_flat_keys_polls = _resolve_preflight_unchanged_flat_keys_polls(history)
     max_flat_unchanged = _max_preflight_flat_unchanged_streak(history)
-    if unchanged_flat_keys_polls <= 0 and max_flat_unchanged > 0:
-        unchanged_flat_keys_polls = max_flat_unchanged
     summary: dict[str, Any] = {
         "polls": len(history),
         "lfg_preflight_watch_result": status.get("lfg_preflight_watch_result"),

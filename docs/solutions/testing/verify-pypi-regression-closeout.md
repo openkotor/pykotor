@@ -159,6 +159,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Preflight watch summary stderr uses compact **`flat_unchanged=N`**; JSON adds **`flat_unchanged`** alias (plan 194).
 - Gate-watch poll stderr uses numeric **`flat_unchanged=N`** streak on unchanged polls (plan 198; was fixed **`=1`** in plan 195).
 - **`preflight_watch_history`** snapshots record **`flat_unchanged`** streak and **`flat_hb`** / **`flat_hb_total`** on heartbeat polls (plans 196, 201).
+- **`_resolve_preflight_flat_keys_heartbeats`** / **`_resolve_preflight_unchanged_flat_keys_polls`** consolidate history fallbacks for watch summary (plan 207).
 - **`preflight_watch_summary`** derives **`flat_unchanged`** from history max streak when pairwise unchanged count is zero (plan 206).
 - Shared **`_preflight_watch_summary_flat_stderr_parts`** co-locates watch summary unchanged/heartbeat tokens (plan 205).
 - Shared **`_preflight_watch_poll_flat_stderr_parts`** co-locates gate-watch unchanged/heartbeat poll tokens (plan 204).
@@ -248,9 +249,9 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–206** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–207** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 206)
+## Last CI check (plan 207)
 
 **2026-05-29:** verify [26549547772](https://github.com/OpenKotOR/PyKotor/actions/runs/26549547772) **success** on `ca61ce8`; FC [26549293445](https://github.com/OpenKotOR/PyKotor/actions/runs/26549293445) **failure** on `ca61ce8`.
 
