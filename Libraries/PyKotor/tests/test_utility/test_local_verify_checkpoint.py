@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–201", patched)
+        self.assertIn("019–202", patched)
 
     def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
         status: dict[str, Any] = {
@@ -703,6 +703,28 @@ Monitoring.
             mod._preflight_flat_keys_heartbeat_count({"flat_hb_total": 3, "flat_hb": 2}),
             3,
         )
+
+    def test_max_preflight_flat_hb_total_from_history(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action"]},
+            {"flat_hb": 1},
+            {"flat_hb_total": 2},
+        ]
+        self.assertEqual(mod._max_preflight_flat_hb_total(history), 2)
+
+    def test_build_preflight_watch_summary_flat_hb_total_history_fallback(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action"]},
+                {"flat_hb_total": 1},
+                {"flat_hb": 2},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+        self.assertEqual(summary.get("flat_hb"), 2)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
 
     def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_hb(self) -> None:
         self.assertTrue(

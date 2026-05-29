@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "201"
+PLAN_TRACK_CAP = "202"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2012,6 +2012,9 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         first_reason = history[0].get("lfg_defer_reason")
         last_reason = history[-1].get("lfg_defer_reason")
     watch_heartbeat_polls = int(status.get("preflight_watch_heartbeat_polls") or 0)
+    flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
+    if flat_keys_heartbeats <= 0:
+        flat_keys_heartbeats = _max_preflight_flat_hb_total(history)
     summary: dict[str, Any] = {
         "polls": len(history),
         "lfg_preflight_watch_result": status.get("lfg_preflight_watch_result"),
@@ -2019,12 +2022,11 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "end_defer_reason": last_reason,
         "watch_duration_sec": duration_sec,
         "unchanged_flat_keys_polls": _count_unchanged_preflight_flat_keys_polls(history),
-        "flat_keys_heartbeat_polls": int(status.get("preflight_flat_keys_heartbeats") or 0),
+        "flat_keys_heartbeat_polls": flat_keys_heartbeats,
         "watch_heartbeat_polls": watch_heartbeat_polls,
     }
     if watch_heartbeat_polls > 0:
         summary["heartbeat_every"] = watch_heartbeat_polls
-    flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
     if flat_keys_heartbeats > 0:
         summary["flat_hb"] = flat_keys_heartbeats
         summary["flat_hb_total"] = flat_keys_heartbeats
@@ -3329,6 +3331,17 @@ def _max_preflight_flat_unchanged_streak(history: list[dict[str, Any]]) -> int:
         if isinstance(streak, int) and streak > max_streak:
             max_streak = streak
     return max_streak
+
+
+def _max_preflight_flat_hb_total(history: list[dict[str, Any]]) -> int:
+    max_hb = 0
+    for entry in history:
+        hb = entry.get("flat_hb_total")
+        if not isinstance(hb, int) or hb <= 0:
+            hb = entry.get("flat_hb")
+        if isinstance(hb, int) and hb > max_hb:
+            max_hb = hb
+    return max_hb
 
 
 def _mirror_preflight_watch_summary_from_status(
