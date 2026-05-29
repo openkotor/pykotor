@@ -156,6 +156,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Preflight watch summary stderr uses **`heartbeat_every=N`** (same token as poll lines) when unchanged flat-key polls occurred (plan 191).
 - **`preflight_watch_summary`** JSON includes **`heartbeat_every`** alias; gated summary stderr uses compact **`flat_hb=N`** (plan 192).
 - Gate-watch heartbeat poll stderr uses **`flat_hb=1`**; summary JSON adds **`flat_hb`** alias (plan 193).
+- Preflight watch summary stderr uses compact **`flat_unchanged=N`**; JSON adds **`flat_unchanged`** alias (plan 194).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -239,7 +240,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–193** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–194** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 

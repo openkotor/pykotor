@@ -496,7 +496,30 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–193", patched)
+        self.assertIn("019–194", patched)
+
+    def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action"]},
+                {"flat_keys": ["primary_action"]},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 1)
+        self.assertEqual(summary.get("flat_unchanged"), 1)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_unchanged(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_hb": 1,
+                    "flat_unchanged": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
 
     def test_build_preflight_watch_summary_flat_hb_alias(self) -> None:
         status: dict[str, Any] = {
@@ -563,7 +586,8 @@ Monitoring.
             },
             watch_label="gate",
         )
-        self.assertIn("unchanged_flat_keys_polls=3", line)
+        self.assertIn("flat_unchanged=3", line)
+        self.assertNotIn("unchanged_flat_keys_polls=", line)
         self.assertIn("heartbeat_every=12", line)
         self.assertNotIn("watch_heartbeat_polls=", line)
 
@@ -580,6 +604,7 @@ Monitoring.
         )
         self.assertNotIn("watch_heartbeat_polls=", line)
         self.assertNotIn("heartbeat_every=", line)
+        self.assertNotIn("flat_unchanged=", line)
 
     def test_build_preflight_watch_summary_watch_heartbeat_polls(self) -> None:
         status: dict[str, Any] = {
@@ -708,7 +733,8 @@ Monitoring.
                 "watch_heartbeat_polls": 12,
             }
         )
-        self.assertIn("unchanged_flat_keys_polls=2", line)
+        self.assertIn("flat_unchanged=2", line)
+        self.assertNotIn("unchanged_flat_keys_polls=", line)
         self.assertIn("heartbeat_every=12", line)
         self.assertNotIn("watch_heartbeat_polls=", line)
 

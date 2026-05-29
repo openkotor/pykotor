@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "193"
+PLAN_TRACK_CAP = "194"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2019,7 +2019,20 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
     if flat_keys_heartbeats > 0:
         summary["flat_hb"] = flat_keys_heartbeats
+    unchanged_flat_keys_polls = summary["unchanged_flat_keys_polls"]
+    if isinstance(unchanged_flat_keys_polls, int) and unchanged_flat_keys_polls > 0:
+        summary["flat_unchanged"] = unchanged_flat_keys_polls
     return summary
+
+
+def _preflight_unchanged_flat_keys_polls(summary: dict[str, Any]) -> int:
+    flat_unchanged = summary.get("flat_unchanged")
+    if isinstance(flat_unchanged, int) and flat_unchanged > 0:
+        return flat_unchanged
+    unchanged = summary.get("unchanged_flat_keys_polls")
+    if isinstance(unchanged, int) and unchanged > 0:
+        return unchanged
+    return 0
 
 
 def _preflight_flat_keys_heartbeat_count(summary: dict[str, Any]) -> int:
@@ -2046,8 +2059,8 @@ def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) 
     heartbeats = _preflight_flat_keys_heartbeat_count(summary)
     if heartbeats <= 0:
         return False
-    unchanged = summary.get("unchanged_flat_keys_polls")
-    if not isinstance(unchanged, int):
+    unchanged = _preflight_unchanged_flat_keys_polls(summary)
+    if unchanged <= 0:
         return False
     interval = _preflight_watch_heartbeat_interval(summary)
     if interval <= 0:
@@ -2065,9 +2078,9 @@ def _format_preflight_watch_summary_line(
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
     parts = [f"result={result} polls={polls} duration={duration_text}"]
-    unchanged_flat = summary.get("unchanged_flat_keys_polls")
-    if isinstance(unchanged_flat, int) and unchanged_flat:
-        parts.append(f"unchanged_flat_keys_polls={unchanged_flat}")
+    unchanged_flat = _preflight_unchanged_flat_keys_polls(summary)
+    if unchanged_flat:
+        parts.append(f"flat_unchanged={unchanged_flat}")
         watch_heartbeat = summary.get("watch_heartbeat_polls")
         if not isinstance(watch_heartbeat, int) or watch_heartbeat <= 0:
             watch_heartbeat = summary.get("heartbeat_every")
