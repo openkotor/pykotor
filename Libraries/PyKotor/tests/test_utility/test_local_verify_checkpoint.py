@@ -496,7 +496,21 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–212", patched)
+        self.assertIn("019–213", patched)
+
+    def test_preflight_watch_summary_unchanged_flat_stderr_parts(self) -> None:
+        parts = mod._preflight_watch_summary_unchanged_flat_stderr_parts(
+            {
+                "flat_unchanged": 2,
+                "max_flat_unchanged": 1,
+                "heartbeat_every": 12,
+            }
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_unchanged=2", joined)
+        self.assertIn("max_flat_unchanged=1", joined)
+        self.assertIn("heartbeat_every=12", joined)
+        self.assertNotIn("flat_hb_total=", joined)
 
     def test_preflight_heartbeat_every_for_stderr_emits_when_unchanged(self) -> None:
         self.assertEqual(
