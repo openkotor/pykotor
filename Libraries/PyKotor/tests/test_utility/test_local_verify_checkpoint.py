@@ -8,7 +8,7 @@ import json
 import subprocess
 import sys
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -457,7 +457,7 @@ Monitoring.
             },
             blocked="deferred",
         )
-        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("--lfg-gate-watch", hint)
         self.assertIn("terminal", hint)
 
     def test_replace_frontmatter_field(self) -> None:
@@ -496,7 +496,996 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–114", patched)
+        self.assertIn("019–214", patched)
+
+    def test_preflight_watch_summary_heartbeat_flat_stderr_parts(self) -> None:
+        parts = mod._preflight_watch_summary_heartbeat_flat_stderr_parts(
+            {
+                "flat_unchanged": 12,
+                "heartbeat_every": 12,
+                "flat_hb_total": 1,
+            }
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_hb_total=1", joined)
+        self.assertNotIn("flat_unchanged=", joined)
+
+    def test_preflight_watch_summary_unchanged_flat_stderr_parts(self) -> None:
+        parts = mod._preflight_watch_summary_unchanged_flat_stderr_parts(
+            {
+                "flat_unchanged": 2,
+                "max_flat_unchanged": 1,
+                "heartbeat_every": 12,
+            }
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_unchanged=2", joined)
+        self.assertIn("max_flat_unchanged=1", joined)
+        self.assertIn("heartbeat_every=12", joined)
+        self.assertNotIn("flat_hb_total=", joined)
+
+    def test_preflight_heartbeat_every_for_stderr_emits_when_unchanged(self) -> None:
+        self.assertEqual(
+            mod._preflight_heartbeat_every_for_stderr(
+                {"flat_unchanged": 2, "heartbeat_every": 12}
+            ),
+            12,
+        )
+
+    def test_preflight_heartbeat_every_for_stderr_omits_without_unchanged(self) -> None:
+        self.assertEqual(
+            mod._preflight_heartbeat_every_for_stderr({"heartbeat_every": 12}),
+            0,
+        )
+
+    def test_preflight_flat_hb_total_for_stderr_emits_when_gate_passes(self) -> None:
+        self.assertEqual(
+            mod._preflight_flat_hb_total_for_stderr(
+                {
+                    "flat_unchanged": 12,
+                    "heartbeat_every": 12,
+                    "flat_hb_total": 1,
+                }
+            ),
+            1,
+        )
+
+    def test_preflight_flat_hb_total_for_stderr_omits_when_unchanged_below_interval(self) -> None:
+        self.assertEqual(
+            mod._preflight_flat_hb_total_for_stderr(
+                {
+                    "flat_unchanged": 5,
+                    "heartbeat_every": 12,
+                    "flat_hb_total": 1,
+                }
+            ),
+            0,
+        )
+
+    def test_preflight_max_flat_unchanged_resolver(self) -> None:
+        self.assertEqual(mod._preflight_max_flat_unchanged({"max_flat_unchanged": 2}), 2)
+        self.assertEqual(mod._preflight_max_flat_unchanged({}), 0)
+
+    def test_preflight_max_flat_unchanged_for_stderr_emits_when_peak_below_total(self) -> None:
+        self.assertEqual(
+            mod._preflight_max_flat_unchanged_for_stderr(
+                {"flat_unchanged": 2, "max_flat_unchanged": 1}
+            ),
+            1,
+        )
+
+    def test_preflight_max_flat_unchanged_for_stderr_omits_when_peak_equals_total(self) -> None:
+        self.assertEqual(
+            mod._preflight_max_flat_unchanged_for_stderr(
+                {"flat_unchanged": 2, "max_flat_unchanged": 2}
+            ),
+            0,
+        )
+
+    def test_preflight_watch_summary_flat_stderr_parts_watch_heartbeat_alias(self) -> None:
+        parts = mod._preflight_watch_summary_flat_stderr_parts(
+            {
+                "flat_unchanged": 2,
+                "watch_heartbeat_polls": 12,
+            }
+        )
+        self.assertIn("heartbeat_every=12", " ".join(parts))
+
+    def test_resolve_preflight_flat_keys_heartbeats_prefers_status(self) -> None:
+        history = [{"flat_hb_total": 2}]
+        status: dict[str, Any] = {"preflight_flat_keys_heartbeats": 3}
+        self.assertEqual(mod._resolve_preflight_flat_keys_heartbeats(status, history), 3)
+
+    def test_resolve_preflight_flat_keys_heartbeats_history_fallback(self) -> None:
+        history = [{"flat_hb": 1}, {"flat_hb_total": 2}]
+        self.assertEqual(mod._resolve_preflight_flat_keys_heartbeats({}, history), 2)
+
+    def test_resolve_preflight_unchanged_flat_keys_polls_prefers_count(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action"]},
+            {"flat_keys": ["primary_action"], "flat_unchanged": 1},
+        ]
+        self.assertEqual(mod._resolve_preflight_unchanged_flat_keys_polls(history), 1)
+
+    def test_resolve_preflight_unchanged_flat_keys_polls_max_streak_fallback(self) -> None:
+        history = [{"flat_unchanged": 2}, {"flat_unchanged": 1}]
+        self.assertEqual(mod._resolve_preflight_unchanged_flat_keys_polls(history), 2)
+
+    def test_build_preflight_watch_summary_flat_unchanged_max_streak_fallback(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_unchanged": 2},
+                {"flat_unchanged": 1},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 2)
+        self.assertEqual(summary.get("flat_unchanged"), 2)
+        self.assertEqual(summary.get("max_flat_unchanged"), 2)
+
+    def test_preflight_watch_summary_flat_stderr_parts_unchanged(self) -> None:
+        parts = mod._preflight_watch_summary_flat_stderr_parts(
+            {
+                "flat_unchanged": 2,
+                "max_flat_unchanged": 1,
+                "heartbeat_every": 12,
+            }
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_unchanged=2", joined)
+        self.assertIn("max_flat_unchanged=1", joined)
+        self.assertIn("heartbeat_every=12", joined)
+        self.assertNotIn("flat_hb_total=", joined)
+
+    def test_preflight_watch_summary_flat_stderr_parts_heartbeat(self) -> None:
+        parts = mod._preflight_watch_summary_flat_stderr_parts(
+            {
+                "flat_unchanged": 12,
+                "heartbeat_every": 12,
+                "flat_hb_total": 1,
+                "unchanged_flat_keys_polls": 12,
+            }
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_unchanged=12", joined)
+        self.assertIn("flat_hb_total=1", joined)
+        self.assertNotIn("flat_hb=", joined)
+
+    def test_preflight_watch_poll_flat_stderr_parts_unchanged(self) -> None:
+        parts = mod._preflight_watch_poll_flat_stderr_parts(
+            ["flat_keys=primary_action", "flat_fields=1"],
+            flat_keys_unchanged=True,
+            flat_keys_unchanged_streak=3,
+            flat_keys_heartbeat_polls=12,
+        )
+        self.assertIn("flat_unchanged=3", parts)
+        self.assertNotIn("flat_keys=primary_action", " ".join(parts))
+        self.assertIn("heartbeat_every=12", parts)
+
+    def test_preflight_watch_poll_flat_stderr_parts_heartbeat(self) -> None:
+        parts = mod._preflight_watch_poll_flat_stderr_parts(
+            ["flat_keys=primary_action"],
+            flat_keys_unchanged=True,
+            flat_keys_unchanged_streak=12,
+            flat_keys_heartbeat_polls=12,
+            flat_keys_heartbeat_count=2,
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_keys=primary_action", joined)
+        self.assertIn("flat_hb=2", joined)
+        self.assertIn("heartbeat_every=12", joined)
+        self.assertNotIn("flat_unchanged=", joined)
+
+    def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        mod._format_preflight_watch_poll_line(1, first_status)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        line = mod._format_preflight_watch_poll_line(
+            4,
+            dict(status),
+            previous_flat_keys=previous,
+            flat_keys_unchanged_streak=3,
+        )
+        self.assertIn("flat_unchanged=3", line)
+        self.assertNotIn("flat_unchanged=1", line)
+
+    def test_max_preflight_flat_unchanged_streak(self) -> None:
+        history = [
+            {"flat_keys": ["a"]},
+            {"flat_keys": ["a"], "flat_unchanged": 1},
+            {"flat_keys": ["a", "b"]},
+            {"flat_keys": ["a", "b"], "flat_unchanged": 1},
+        ]
+        self.assertEqual(mod._count_unchanged_preflight_flat_keys_polls(history), 2)
+        self.assertEqual(mod._max_preflight_flat_unchanged_streak(history), 1)
+
+    def test_build_preflight_watch_summary_max_flat_unchanged(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["a"]},
+                {"flat_keys": ["a"], "flat_unchanged": 1},
+                {"flat_keys": ["a", "b"]},
+                {"flat_keys": ["a", "b"], "flat_unchanged": 1},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_unchanged"), 2)
+        self.assertEqual(summary.get("max_flat_unchanged"), 1)
+
+    def test_format_preflight_watch_summary_line_max_flat_unchanged(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 4,
+                "lfg_preflight_watch_result": "timeout",
+                "flat_unchanged": 2,
+                "max_flat_unchanged": 1,
+                "watch_heartbeat_polls": 12,
+            },
+        )
+        self.assertIn("flat_unchanged=2", line)
+        self.assertIn("max_flat_unchanged=1", line)
+
+    def test_watch_lfg_preflight_defer_history_flat_unchanged_streak(self) -> None:
+        deferred_status: dict[str, Any] = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "fc_active_pending",
+            },
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        with patch.object(
+            mod, "_ci_status", side_effect=[deferred_status, deferred_status, deferred_status]
+        ):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(
+                            mod.time,
+                            "monotonic",
+                            side_effect=[0.0, 0.0, 0.0, 0.0, 100.0, 100.0],
+                        ):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                                flat_keys_heartbeat_polls=12,
+                            )
+        history = status.get("preflight_watch_history") or []
+        self.assertEqual(len(history), 3)
+        self.assertNotIn("flat_unchanged", history[0])
+        self.assertEqual(history[1].get("flat_unchanged"), 1)
+        self.assertEqual(history[2].get("flat_unchanged"), 2)
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("max_flat_unchanged"), 2)
+        self.assertNotIn("max_flat_unchanged=", mod._format_preflight_watch_summary_line(summary))
+
+    def test_watch_lfg_preflight_defer_history_flat_hb_cumulative(self) -> None:
+        deferred_status: dict[str, Any] = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "fc_active_pending",
+            },
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        with patch.object(
+            mod, "_ci_status", side_effect=[deferred_status, deferred_status, deferred_status]
+        ):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(
+                            mod.time,
+                            "monotonic",
+                            side_effect=[0.0, 0.0, 0.0, 0.0, 100.0, 100.0],
+                        ):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                                flat_keys_heartbeat_polls=1,
+                            )
+        history = status.get("preflight_watch_history") or []
+        self.assertEqual(len(history), 3)
+        self.assertNotIn("flat_hb", history[0])
+        self.assertNotIn("flat_hb_total", history[0])
+        self.assertEqual(history[1].get("flat_hb"), 1)
+        self.assertEqual(history[1].get("flat_hb_total"), 1)
+        self.assertEqual(history[2].get("flat_hb"), 2)
+        self.assertEqual(history[2].get("flat_hb_total"), 2)
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+
+    def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action"]},
+                {"flat_keys": ["primary_action"]},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 1)
+        self.assertEqual(summary.get("flat_unchanged"), 1)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_unchanged(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_hb": 1,
+                    "flat_unchanged": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
+
+    def test_build_preflight_watch_summary_flat_hb_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_flat_keys_heartbeats": 2,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
+        self.assertEqual(summary.get("flat_hb"), 2)
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+
+    def test_preflight_flat_keys_heartbeat_count_prefers_flat_hb_total(self) -> None:
+        self.assertEqual(
+            mod._preflight_flat_keys_heartbeat_count({"flat_hb_total": 3, "flat_hb": 2}),
+            3,
+        )
+
+    def test_max_preflight_flat_hb_total_from_history(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action"]},
+            {"flat_hb": 1},
+            {"flat_hb_total": 2},
+        ]
+        self.assertEqual(mod._max_preflight_flat_hb_total(history), 2)
+
+    def test_build_preflight_watch_summary_flat_hb_total_history_fallback(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action"]},
+                {"flat_hb_total": 1},
+                {"flat_hb": 2},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+        self.assertEqual(summary.get("flat_hb"), 2)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_hb(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_hb": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
+
+    def test_build_preflight_watch_summary_heartbeat_every_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 12,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 12)
+        self.assertEqual(summary.get("heartbeat_every"), 12)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_heartbeat_every(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
+
+    def test_lfg_flat_field_mirror_stderr_parts(self) -> None:
+        parts = mod._lfg_flat_field_mirror_stderr_parts(
+            {
+                "lfg_flat_field_values": {
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 2,
+                },
+                "lfg_flat_field_keys_present": ["primary_action", "fc_run_id"],
+            }
+        )
+        self.assertTrue(any(part.startswith("flat_fields=") for part in parts))
+        self.assertTrue(any(part.startswith("flat_keys=") for part in parts))
+
+    def test_format_preflight_watch_summary_line_watch_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 5,
+                "lfg_preflight_watch_result": "timeout",
+                "unchanged_flat_keys_polls": 3,
+                "watch_heartbeat_polls": 12,
+            },
+            watch_label="gate",
+        )
+        self.assertIn("flat_unchanged=3", line)
+        self.assertNotIn("unchanged_flat_keys_polls=", line)
+        self.assertIn("heartbeat_every=12", line)
+        self.assertNotIn("watch_heartbeat_polls=", line)
+
+    def test_format_preflight_watch_summary_line_omits_watch_heartbeat_without_unchanged(
+        self,
+    ) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 2,
+                "lfg_preflight_watch_result": "proceed",
+                "unchanged_flat_keys_polls": 0,
+                "watch_heartbeat_polls": 12,
+            },
+        )
+        self.assertNotIn("watch_heartbeat_polls=", line)
+        self.assertNotIn("heartbeat_every=", line)
+        self.assertNotIn("flat_unchanged=", line)
+
+    def test_build_preflight_watch_summary_watch_heartbeat_polls(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 12,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 12)
+        self.assertEqual(summary.get("heartbeat_every"), 12)
+
+    def test_build_preflight_watch_summary_omits_heartbeat_every_when_zero(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 0,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 0)
+        self.assertNotIn("heartbeat_every", summary)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "watch_heartbeat_polls": 12,
+                }
+            )
+        )
+        self.assertFalse(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 5,
+                    "watch_heartbeat_polls": 12,
+                }
+            )
+        )
+
+    def test_format_preflight_watch_summary_line_omits_early_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 6,
+                "lfg_preflight_watch_result": "timeout",
+                "flat_keys_heartbeat_polls": 1,
+                "unchanged_flat_keys_polls": 5,
+                "watch_heartbeat_polls": 12,
+            },
+            watch_label="gate",
+        )
+        self.assertNotIn("flat_keys_heartbeat_polls=", line)
+        self.assertNotIn("flat_hb=", line)
+        self.assertNotIn("flat_hb_total=", line)
+
+    def test_format_preflight_watch_poll_line_flat_keys_heartbeat(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        mod._format_preflight_watch_poll_line(1, first_status)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        line = mod._format_preflight_watch_poll_line(
+            13,
+            dict(status),
+            previous_flat_keys=previous,
+            flat_keys_unchanged_streak=12,
+            flat_keys_heartbeat_polls=12,
+            flat_keys_heartbeat_count=2,
+        )
+        self.assertIn("flat_keys=", line)
+        self.assertIn("flat_hb=2", line)
+        self.assertIn("heartbeat_every=12", line)
+        self.assertNotIn("flat_unchanged=1", line)
+        self.assertNotIn("flat_keys_heartbeat=", line)
+
+    def test_build_preflight_watch_summary_flat_keys_heartbeat_polls(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [{"flat_keys": ["primary_action"]}],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_flat_keys_heartbeats": 2,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
+
+    def test_count_unchanged_preflight_flat_keys_polls(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action", "fc_run_id"]},
+            {"flat_keys": ["primary_action", "fc_run_id"]},
+            {"flat_keys": ["primary_action", "fc_run_id", "verify_run_id"]},
+        ]
+        self.assertEqual(mod._count_unchanged_preflight_flat_keys_polls(history), 1)
+
+    def test_build_preflight_watch_summary_unchanged_flat_keys(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action", "fc_run_id"]},
+                {"flat_keys": ["primary_action", "fc_run_id"]},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 1)
+
+    def test_format_preflight_watch_summary_line_unchanged_flat_keys(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 3,
+                "watch_duration_sec": 12.0,
+                "unchanged_flat_keys_polls": 2,
+                "watch_heartbeat_polls": 12,
+            }
+        )
+        self.assertIn("flat_unchanged=2", line)
+        self.assertNotIn("unchanged_flat_keys_polls=", line)
+        self.assertIn("heartbeat_every=12", line)
+        self.assertNotIn("watch_heartbeat_polls=", line)
+
+    def test_format_preflight_watch_summary_line_flat_keys_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 13,
+                "result": "timeout",
+                "flat_keys_heartbeat_polls": 1,
+                "unchanged_flat_keys_polls": 12,
+                "watch_heartbeat_polls": 12,
+            },
+            watch_label="gate",
+        )
+        self.assertIn("flat_hb_total=1", line)
+        self.assertNotIn("flat_hb=", line)
+        self.assertNotIn("flat_keys_heartbeat_polls=", line)
+
+    def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        first = mod._format_preflight_watch_poll_line(1, first_status)
+        self.assertIn("flat_keys=", first)
+        self.assertNotIn("flat_unchanged=1", first)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        second = mod._format_preflight_watch_poll_line(
+            2,
+            dict(status),
+            previous_flat_keys=previous,
+        )
+        self.assertNotIn("flat_keys=", second)
+        self.assertNotIn("flat_fields=", second)
+        self.assertIn("flat_unchanged=1", second)
+        self.assertNotIn("flat_unchanged=true", second)
+        self.assertIn("heartbeat_every=12", second)
+
+    def test_format_preflight_watch_poll_line_flat_keys_changed(self) -> None:
+        base: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "primary_action": "gate_watch",
+            "fc_run_id": 2,
+            "lfg_flat_field_keys_present": ["primary_action", "fc_run_id"],
+            "lfg_flat_field_values": {
+                "primary_action": "gate_watch",
+                "fc_run_id": 2,
+            },
+        }
+        poll_status = dict(base)
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            poll_status,
+            previous_flat_keys=["primary_action"],
+        )
+        self.assertIn("flat_keys=", line)
+        self.assertNotIn("flat_unchanged=1", line)
+
+    def test_lfg_flat_field_keys_present_stderr(self) -> None:
+        keys = mod._lfg_flat_field_keys_present_stderr(
+            {
+                "lfg_flat_field_keys_present": [
+                    "primary_action",
+                    "fc_run_id",
+                ],
+            }
+        )
+        self.assertEqual(keys, ["primary_action", "fc_run_id"])
+        keys = mod._lfg_flat_field_keys_present_stderr(
+            {
+                "primary_action": "gate_watch",
+                "fc_run_id": 2,
+            }
+        )
+        self.assertEqual(keys, ["primary_action", "fc_run_id"])
+
+    def test_lfg_briefing_mirror_stderr_parts_flat_keys(self) -> None:
+        joined = " ".join(
+            mod._lfg_briefing_mirror_stderr_parts(
+                {
+                    "lfg_flat_field_keys_present": [
+                        "primary_action",
+                        "fc_run_id",
+                        "watch_recommended",
+                    ],
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 2,
+                    "watch_recommended": True,
+                }
+            )
+        )
+        self.assertIn("flat_fields=3", joined)
+        self.assertIn(
+            "flat_keys=primary_action,fc_run_id,watch_recommended",
+            joined,
+        )
+
+    def test_build_lfg_flat_field_keys_present_order(self) -> None:
+        present = mod._build_lfg_flat_field_keys_present(
+            {
+                "fc_run_id": 2,
+                "primary_action": "gate_watch",
+                "verify_run_id": 1,
+            }
+        )
+        self.assertEqual(
+            present,
+            ["primary_action", "verify_run_id", "fc_run_id"],
+        )
+
+    def test_apply_lfg_agent_briefing_sets_flat_field_keys_present(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        present = status.get("lfg_flat_field_keys_present") or []
+        self.assertIn("wait_recommended", present)
+        self.assertIn("ci_drift", present)
+        self.assertIn("fc_run_id", present)
+        flat_values = status.get("lfg_flat_field_values") or {}
+        self.assertEqual(present, mod._build_lfg_flat_field_keys_present(flat_values))
+
+    def test_mirror_preflight_watch_summary_flat_field_keys_present(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "primary_action": "gate_watch",
+            "verify_run_id": 10,
+            "watch_recommended": True,
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        present = summary.get("lfg_flat_field_keys_present") or []
+        self.assertEqual(
+            present,
+            ["primary_action", "watch_recommended", "verify_run_id"],
+        )
+
+    def test_should_attach_lfg_mirror_stderr_flat_fields_only(self) -> None:
+        self.assertTrue(
+            mod._should_attach_lfg_mirror_stderr(
+                {
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 1,
+                }
+            )
+        )
+        self.assertFalse(mod._should_attach_lfg_mirror_stderr({}))
+
+    def test_emit_lfg_strict_exit_stderr_top_level_flat_only(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "defer",
+            "primary_action": "gate_watch",
+            "fc_run_id": 26549293445,
+            "lfg_flat_field_values": {
+                "briefing_action": "defer",
+                "primary_action": "gate_watch",
+                "fc_run_id": 26549293445,
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("flat_fields=3", output)
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("fc_run=26549293445", output)
+
+    def test_lfg_flat_field_stderr_count(self) -> None:
+        self.assertEqual(
+            mod._lfg_flat_field_stderr_count(
+                {
+                    "lfg_flat_field_values": {
+                        "primary_action": "gate_watch",
+                        "verify_run_id": 1,
+                        "watch_recommended": True,
+                    },
+                }
+            ),
+            3,
+        )
+        self.assertEqual(
+            mod._lfg_flat_field_stderr_count(
+                {
+                    "primary_action": "gate_watch",
+                    "verify_run_id": 99,
+                }
+            ),
+            2,
+        )
+
+    def test_lfg_briefing_mirror_stderr_parts_flat_fields(self) -> None:
+        joined = " ".join(
+            mod._lfg_briefing_mirror_stderr_parts(
+                {
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 2,
+                    "watch_recommended": True,
+                    "lfg_flat_field_values": {
+                        "primary_action": "gate_watch",
+                        "fc_run_id": 2,
+                        "watch_recommended": True,
+                    },
+                }
+            )
+        )
+        self.assertIn("flat_fields=3", joined)
+        self.assertIn("primary_action=gate_watch", joined)
+
+    def test_emit_lfg_strict_exit_stderr_flat_fields(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "defer",
+            "primary_action": "gate_watch",
+            "fc_run_id": 26549293445,
+            "lfg_agent_briefing": {"action": "defer"},
+            "lfg_flat_field_values": {
+                "briefing_action": "defer",
+                "primary_action": "gate_watch",
+                "fc_run_id": 26549293445,
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("flat_fields=3", err.getvalue())
+
+    def test_build_lfg_flat_field_values_omits_empty(self) -> None:
+        values = mod._build_lfg_flat_field_values(
+            {
+                "primary_action": "gate_watch",
+                "briefing_action": "",
+                "active_runs": [],
+                "watch_recommended": True,
+                "briefing_merge_ready": False,
+                "verify_run_id": 99,
+            }
+        )
+        self.assertEqual(values.get("primary_action"), "gate_watch")
+        self.assertTrue(values.get("watch_recommended"))
+        self.assertFalse(values.get("briefing_merge_ready"))
+        self.assertEqual(values.get("verify_run_id"), 99)
+        self.assertNotIn("briefing_action", values)
+        self.assertNotIn("active_runs", values)
+
+    def test_apply_lfg_agent_briefing_sets_flat_field_values(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        flat_values = status.get("lfg_flat_field_values") or {}
+        self.assertTrue(flat_values.get("wait_recommended"))
+        self.assertIn("fields", flat_values.get("ci_drift") or {})
+        self.assertEqual(flat_values.get("fc_run_id"), 2)
+        self.assertNotIn("sha_gap", flat_values)
+
+    def test_mirror_preflight_watch_summary_flat_field_values(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "primary_action": "gate_watch",
+            "verify_run_id": 10,
+            "watch_recommended": True,
+            "lfg_flat_field_keys": list(mod.LFG_FLAT_FIELD_KEYS),
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        flat_values = summary.get("lfg_flat_field_values") or {}
+        self.assertEqual(flat_values.get("primary_action"), "gate_watch")
+        self.assertEqual(flat_values.get("verify_run_id"), 10)
+        self.assertTrue(flat_values.get("watch_recommended"))
+
+    def test_lfg_flat_field_keys_constant(self) -> None:
+        self.assertIn("verify_run_id", mod.LFG_FLAT_FIELD_KEYS)
+        self.assertIn("wait_recommended", mod.LFG_FLAT_FIELD_KEYS)
+        self.assertIn("ci_drift", mod.LFG_FLAT_FIELD_KEYS)
+
+    def test_apply_lfg_agent_briefing_sets_flat_field_keys(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(status.get("lfg_flat_field_keys"), list(mod.LFG_FLAT_FIELD_KEYS))
+
+    def test_mirror_preflight_watch_summary_flat_field_keys(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "lfg_flat_field_keys": list(mod.LFG_FLAT_FIELD_KEYS),
+            "primary_action": "gate_watch",
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertEqual(summary.get("lfg_flat_field_keys"), list(mod.LFG_FLAT_FIELD_KEYS))
+        self.assertEqual(summary.get("primary_action"), "gate_watch")
+
+    def test_mirror_lfg_flat_fields_from_briefing(self) -> None:
+        target: dict[str, Any] = {"existing": True}
+        briefing: dict[str, Any] = {
+            "action": "investigate_ci_drift",
+            "reason": "fc_active_pending",
+            "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            "active_runs": ["fc"],
+            "verify_run_id": 1,
+            "fc_run_id": 2,
+            "wait_recommended": True,
+            "drift": {"fields": [{"field": "forward_commits_run_id"}]},
+            "monitor_commands": {
+                "watch_fc_run": "gh run watch 2 --exit-status",
+            },
+        }
+        mod._mirror_lfg_flat_fields(briefing, target, clear_missing=True)
+        self.assertEqual(target.get("briefing_action"), "investigate_ci_drift")
+        self.assertEqual(target.get("briefing_reason"), "fc_active_pending")
+        self.assertIn("--lfg-gate-watch", target.get("briefing_command") or "")
+        self.assertEqual(target.get("active_runs"), ["fc"])
+        self.assertEqual(target.get("verify_run_id"), 1)
+        self.assertEqual(target.get("fc_run_id"), 2)
+        self.assertTrue(target.get("wait_recommended"))
+        self.assertEqual(
+            (target.get("ci_drift") or {}).get("fields"),
+            [{"field": "forward_commits_run_id"}],
+        )
+        self.assertEqual(
+            target.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1056,6 +2045,180 @@ Monitoring.
         self.assertIn("watch_queue", err.getvalue())
         self.assertIn("watch-cmd", err.getvalue())
 
+    def test_emit_lfg_strict_exit_stderr_defer_briefing(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {
+                "primary_action": "gate_watch",
+                "expected_after_terminal": {"action": "closeout"},
+                "active_runs": ["fc"],
+                "gh_watch_summary": "fc:26549293445",
+                "queue_context": {"max_queued_hours": 1.5, "note": "Runner backlog ~3h"},
+                "watch_recommended": True,
+                "fc_run_id": 26549293445,
+                "verify_status": "queued",
+                "fc_status": "queued",
+                "blocked": "deferred",
+                "action": "defer",
+                "reason": "unchanged_active_runs",
+                "notes": ["Runner backlog ~3h"],
+                "merge_ready": False,
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    "gate_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+                },
+                "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("expected_after=closeout", output)
+        self.assertIn("active_runs=fc", output)
+        self.assertIn("gh_watch=fc:26549293445", output)
+        self.assertIn("queued=1.5h", output)
+        self.assertIn("fc_run=26549293445", output)
+        self.assertIn("verify_status=queued", output)
+        self.assertIn("fc_status=queued", output)
+        self.assertIn("blocked=deferred", output)
+        self.assertIn("action=defer", output)
+        self.assertIn("briefing_reason=unchanged_active_runs", output)
+        self.assertIn("notes=1", output)
+        self.assertIn("merge_ready=false", output)
+        self.assertIn("queue_note=Runner backlog ~3h", output)
+        self.assertIn("watch=gh run watch 26549293445 --exit-status", output)
+        self.assertIn("briefing_command=", output)
+        self.assertIn("--lfg-gate-watch", output)
+
+    def test_emit_lfg_strict_exit_stderr_prefers_top_level_status(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "primary_action": "gate_watch",
+            "max_queued_hours": 4.0,
+            "queue_backlog": True,
+            "lfg_agent_briefing": {
+                "primary_action": "legacy_action",
+                "queue_context": {"max_queued_hours": 1.0},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertNotIn("primary_action=legacy_action", output)
+        self.assertIn("queued=4.0h", output)
+        self.assertIn("queue_backlog=true", output)
+
+    def test_lfg_briefing_mirror_stderr_parts_shared_helper(self) -> None:
+        status: dict[str, Any] = {
+            "primary_action": "gate_watch",
+            "briefing_action": "defer",
+            "max_queued_hours": 2.0,
+            "queue_backlog_warning": True,
+        }
+        parts = mod._lfg_briefing_mirror_stderr_parts(status)
+        joined = " ".join(parts)
+        self.assertIn("primary_action=gate_watch", joined)
+        self.assertIn("action=defer", joined)
+        self.assertIn("queued=2.0h", joined)
+        self.assertIn("queue_warn=true", joined)
+
+    def test_lfg_briefing_mirror_stderr_parts_wait_drift(self) -> None:
+        status: dict[str, Any] = {
+            "briefing_action": "investigate_ci_drift",
+            "wait_recommended": True,
+            "ci_drift": {
+                "fields": [
+                    {"field": "forward_commits_run_id"},
+                    {"field": "verify_run_id"},
+                ],
+            },
+            "fc_run_id": 26549293445,
+        }
+        joined = " ".join(mod._lfg_briefing_mirror_stderr_parts(status))
+        self.assertIn("wait=true", joined)
+        self.assertIn("drift_fields=forward_commits_run_id,verify_run_id", joined)
+        self.assertIn("fc_run=26549293445", joined)
+
+    def test_emit_lfg_strict_exit_stderr_investigate_drift(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "investigate_ci_drift",
+            "wait_recommended": True,
+            "ci_drift": {
+                "fields": [{"field": "forward_commits_run_id"}],
+            },
+            "fc_run_id": 26547437912,
+            "lfg_agent_briefing": {
+                "action": "investigate_ci_drift",
+                "wait_recommended": True,
+                "drift": {"fields": [{"field": "forward_commits_run_id"}]},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("drift_fields=forward_commits_run_id", output)
+        self.assertIn("action=investigate_ci_drift", output)
+        self.assertIn("fc_run=26547437912", output)
+
+    def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {"watch_recommended": True},
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("watch_recommended=true", err.getvalue())
+
+    def test_apply_lfg_agent_briefing_gh_watch_summary(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {"defer_lfg_pr": True, "queue_backlog_note": "Runner backlog ~3h"},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 0.3, "url": "https://example.com/runs/2"},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            mod._apply_lfg_agent_briefing(status)
+        briefing = status.get("lfg_agent_briefing") or {}
+        self.assertEqual(briefing.get("gh_watch_summary"), "verify:1,fc:2")
+        self.assertEqual(status.get("gh_watch_summary"), "verify:1,fc:2")
+        self.assertEqual(status.get("active_runs"), ["verify", "fc"])
+        queue_context = status.get("queue_context") or {}
+        self.assertIn("max_queued_hours", queue_context)
+        self.assertTrue(status.get("queue_backlog_warning"))
+        self.assertFalse(status.get("queue_backlog"))
+        self.assertEqual(status.get("max_queued_hours"), queue_context.get("max_queued_hours"))
+        expected_after = status.get("expected_after_terminal") or {}
+        self.assertEqual(expected_after.get("action"), "closeout")
+        self.assertEqual(status.get("primary_action"), "gate_watch")
+        self.assertTrue(status.get("watch_recommended"))
+        post_terminal = status.get("post_terminal_commands") or {}
+        self.assertIn("closeout", post_terminal)
+        self.assertIn("--lfg-gate-watch", status.get("wait_command") or "")
+        self.assertIn("--lfg-gate-watch", status.get("briefing_command") or "")
+        monitor_commands = status.get("monitor_commands") or {}
+        self.assertIn("gate_watch", monitor_commands)
+        self.assertEqual(status.get("verify_run_id"), 1)
+        self.assertEqual(status.get("fc_run_id"), 2)
+        self.assertEqual(status.get("verify_run_url"), "https://example.com/runs/1")
+        self.assertEqual(status.get("fc_run_url"), "https://example.com/runs/2")
+        self.assertEqual(status.get("verify_status"), "queued")
+        self.assertEqual(status.get("fc_status"), "queued")
+        self.assertEqual(status.get("blocked"), "deferred")
+        self.assertEqual(status.get("briefing_action"), "defer")
+        self.assertEqual(status.get("briefing_reason"), "unchanged_active_runs")
+        self.assertEqual(status.get("briefing_notes"), ["Runner backlog ~3h"])
+        self.assertFalse(status.get("briefing_merge_ready"))
+        self.assertEqual(status.get("queue_backlog_note"), "Runner backlog ~3h")
+        self.assertEqual(
+            status.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
+
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
         with patch.object(
@@ -1289,10 +2452,349 @@ Monitoring.
                 "proceed_reason": "investigate_ci_drift",
                 "ci_drift_note": "FC run 26543899770 vs doc 26365648344",
             },
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 26365648344,
+                        "live": 26543899770,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "completed",
+                "conclusion": "success",
+            },
         }
         briefing = mod._build_lfg_agent_briefing(status)
         self.assertEqual(briefing["action"], "investigate_ci_drift")
         self.assertIn("26543899770", briefing["notes"][0])
+        self.assertFalse(briefing["wait_recommended"])
+        self.assertIn("closeout", briefing["refresh_commands"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "closeout")
+        drift = briefing["drift"]
+        self.assertEqual(len(drift["fields"]), 1)
+
+    def test_build_lfg_agent_briefing_investigate_drift_active_fc(self) -> None:
+        status: dict[str, Any] = {
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+            "checkpoint": {
+                "proceed_reason": "investigate_ci_drift",
+                "ci_drift_note": "FC run 26547437912 vs doc 26547345351",
+            },
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 26547345351,
+                        "live": 26547437912,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 26547437912,
+                "status": "queued",
+                "conclusion": "",
+                "url": "https://example.com/runs/26547437912",
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertTrue(briefing["wait_recommended"])
+        self.assertIn("--lfg-gate-watch", briefing["command"])
+        self.assertEqual(briefing["fc_run_id"], 26547437912)
+        self.assertEqual(briefing["primary_action"], "gate_watch")
+        self.assertIn("gate_watch", briefing["refresh_commands"])
+        self.assertNotIn("closeout", briefing["refresh_commands"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "refresh_dry_run")
+        self.assertIn("queue_context", briefing)
+        self.assertEqual(briefing["active_runs"], ["fc"])
+
+    def test_apply_lfg_agent_briefing_wait_drift_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 1,
+                        "live": 2,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertTrue(status.get("wait_recommended"))
+        ci_drift = status.get("ci_drift") or {}
+        self.assertIn("fields", ci_drift)
+
+    def test_mirror_preflight_watch_summary_wait_drift(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "wait_recommended": True,
+            "ci_drift": {"fields": [{"field": "forward_commits_run_id"}]},
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertTrue(summary.get("wait_recommended"))
+        self.assertEqual(
+            (summary.get("ci_drift") or {}).get("fields"),
+            [{"field": "forward_commits_run_id"}],
+        )
+
+    def test_emit_drift_briefing_stderr_wait_expected_after(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "investigate_ci_drift",
+                    "wait_recommended": True,
+                    "primary_action": "gate_watch",
+                    "active_runs": ["fc"],
+                    "queue_context": {"max_queued_hours": 0.5},
+                    "expected_after_terminal": {
+                        "action": "refresh_dry_run",
+                        "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+                    },
+                    "drift": {
+                        "fields": [
+                            {"field": "forward_commits_run_id"},
+                            {"field": "verify_run_id"},
+                        ],
+                    },
+                    "fc_run_id": 26549293445,
+                    "monitor_commands": {
+                        "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("expected_after=refresh_dry_run", output)
+        self.assertIn("drift_fields=forward_commits_run_id,verify_run_id", output)
+        self.assertIn("queued=0.5h", output)
+        self.assertIn("active_runs=fc", output)
+
+    def test_emit_defer_briefing_stderr_verify_run(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "unchanged_active_runs",
+                    "verify_run_id": 26549547772,
+                    "fc_run_id": 26549293445,
+                    "active_runs": ["verify", "fc"],
+                    "monitor_commands": {
+                        "watch_verify_run": "gh run watch 26549547772 --exit-status",
+                        "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("verify_run=26549547772", output)
+        self.assertIn("fc_run=26549293445", output)
+        self.assertIn("gh_watch=verify:26549547772,fc:26549293445", output)
+
+    def test_emit_lfg_agent_briefing_stderr_prefers_top_level_status(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "verify_run_id": 999,
+                    "fc_run_id": 1000,
+                    "gh_watch_summary": "verify:999,fc:1000",
+                    "lfg_agent_briefing": {
+                        "action": "defer",
+                        "reason": "unchanged_active_runs",
+                        "verify_run_id": 1,
+                        "fc_run_id": 2,
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("verify_run=999", output)
+        self.assertIn("fc_run=1000", output)
+        self.assertIn("gh_watch=verify:999,fc:1000", output)
+        self.assertIn("reason=unchanged_active_runs", output)
+
+    def test_format_gh_watch_summary_fc_only(self) -> None:
+        summary = mod._format_gh_watch_summary(
+            {
+                "fc_run_id": 26549293445,
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                },
+            }
+        )
+        self.assertEqual(summary, "fc:26549293445")
+
+    def test_build_gh_watch_from_status(self) -> None:
+        status = {
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 2, "status": "in_progress", "conclusion": ""},
+        }
+        self.assertEqual(mod._build_gh_watch_from_status(status), "verify:1,fc:2")
+
+    def test_mirror_preflight_watch_summary_from_status(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "active_runs": ["fc"],
+            "gh_watch_summary": "fc:99",
+            "primary_action": "gate_watch",
+            "verify_run_id": 99,
+            "fc_run_id": 100,
+            "briefing_action": "defer",
+            "briefing_reason": "fc_active_pending",
+            "briefing_notes": ["note"],
+            "briefing_merge_ready": False,
+            "blocked": "deferred",
+            "watch_recommended": True,
+            "max_queued_hours": 3.5,
+            "queue_backlog_warning": True,
+            "queue_context": {"max_queued_hours": 3.5, "queue_backlog_warning": True},
+            "gh_watch_command": "gh run watch 100 --exit-status",
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertEqual(summary.get("active_runs"), ["fc"])
+        self.assertEqual(summary.get("gh_watch_summary"), "fc:99")
+        self.assertEqual(summary.get("primary_action"), "gate_watch")
+        self.assertEqual(summary.get("verify_run_id"), 99)
+        self.assertEqual(summary.get("fc_run_id"), 100)
+        self.assertEqual(summary.get("briefing_action"), "defer")
+        self.assertEqual(summary.get("briefing_reason"), "fc_active_pending")
+        self.assertEqual(summary.get("briefing_notes"), ["note"])
+        self.assertFalse(summary.get("briefing_merge_ready"))
+        self.assertEqual(summary.get("blocked"), "deferred")
+        self.assertTrue(summary.get("watch_recommended"))
+        self.assertEqual(summary.get("max_queued_hours"), 3.5)
+        self.assertTrue(summary.get("queue_backlog_warning"))
+        self.assertEqual(
+            summary.get("gh_watch_command"),
+            "gh run watch 100 --exit-status",
+        )
+
+    def test_watch_summary_includes_active_runs(self) -> None:
+        deferred_status = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0, "url": "https://example.com/runs/2"},
+        }
+        with patch.object(mod, "_ci_status", return_value=deferred_status):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 100.0]):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                            )
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
+        self.assertEqual(summary.get("gh_watch_summary"), "verify:1,fc:2")
+        queue_context = summary.get("queue_context") or {}
+        self.assertEqual(queue_context.get("max_queued_hours"), 2.5)
+        expected_after = summary.get("expected_after_terminal") or {}
+        self.assertEqual(expected_after.get("action"), "closeout")
+        self.assertEqual(summary.get("primary_action"), "gate_watch")
+        self.assertTrue(summary.get("watch_recommended"))
+        post_terminal = summary.get("post_terminal_commands") or {}
+        self.assertIn("closeout", post_terminal)
+        self.assertIn("--lfg-gate-watch", summary.get("wait_command") or "")
+        monitor_commands = summary.get("monitor_commands") or {}
+        self.assertIn("gate_watch", monitor_commands)
+        self.assertEqual(summary.get("verify_run_id"), 1)
+        self.assertEqual(summary.get("fc_run_id"), 2)
+        self.assertEqual(summary.get("verify_run_url"), "https://example.com/runs/1")
+        self.assertEqual(summary.get("fc_run_url"), "https://example.com/runs/2")
+        self.assertEqual(summary.get("verify_status"), "queued")
+        self.assertEqual(summary.get("fc_status"), "queued")
+        self.assertEqual(summary.get("blocked"), "deferred")
+        self.assertEqual(summary.get("briefing_action"), "defer")
+        self.assertEqual(summary.get("briefing_reason"), "unchanged_active_runs")
+        self.assertEqual(summary.get("briefing_notes"), ["Runner backlog ~3h"])
+        self.assertFalse(summary.get("briefing_merge_ready"))
+        self.assertEqual(summary.get("queue_backlog_note"), "Runner backlog ~3h")
+        self.assertTrue(summary.get("queue_backlog_warning"))
+        self.assertEqual(summary.get("max_queued_hours"), 2.5)
+        self.assertEqual(
+            summary.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
+        self.assertIn("--lfg-gate-watch", summary.get("briefing_command") or "")
+
+    def test_build_drift_expected_after_prefers_closeout(self) -> None:
+        expected = mod._build_drift_expected_after(
+            {
+                "refresh_dry_run": "dry-run",
+                "closeout": "closeout",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "closeout")
+
+    def test_build_proceed_hint_investigate_drift_active_fc(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+            },
+            blocked=None,
+        )
+        self.assertIn("--lfg-gate-watch", hint)
+
+    def test_emit_investigate_drift_stderr_wait_and_fields(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "investigate_ci_drift",
+                    "wait_recommended": True,
+                    "drift": {
+                        "fields": [{"field": "forward_commits_run_id"}],
+                    },
+                    "fc_run_id": 26547437912,
+                    "monitor_commands": {
+                        "watch_fc_run": "gh run watch 26547437912 --exit-status",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("drift_fields=forward_commits_run_id", output)
+        self.assertIn("fc_run=26547437912", output)
 
     def test_emit_lfg_agent_briefing_stderr(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -1310,6 +2812,9 @@ Monitoring.
         self.assertIn("complete=4%", output)
 
     def test_apply_pr_merge_status_queue_backlog_hint(self) -> None:
+        recent_start = (
+            datetime.now(timezone.utc) - timedelta(hours=1)
+        ).strftime("%Y-%m-%dT%H:%M:%SZ")
         status: dict[str, Any] = {"lfg_track_complete": True}
         with patch.object(
             mod,
@@ -1326,7 +2831,7 @@ Monitoring.
                 "pending_check_details": [
                     {
                         "name": "label",
-                        "started_at": "2026-05-27T21:30:00Z",
+                        "started_at": recent_start,
                         "workflow": "CI",
                         "details_url": "",
                     },
@@ -2357,6 +3862,33 @@ last_verified: 2026-01-01
         self.assertIn("fc_stale_gap_pending_note", result)
         self.assertIn("queued", result.get("fc_stale_gap_pending_note", ""))
 
+    def test_compare_fc_active_pending_queue_backlog_note(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+                "queued_hours": 4.5,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertIn("queue_backlog_note", result)
+        self.assertIn("4.5h", result["queue_backlog_note"])
+
     def test_compare_classify_gap_when_fc_terminal_benign_unknown(self) -> None:
         status = {
             "verify_pypi": {
@@ -2391,10 +3923,11 @@ last_verified: 2026-01-01
                 "lfg_defer_reason": "fc_active_pending",
                 "proceed_hint": (
                     "python3 .github/scripts/local_verify_pypi_slice.py "
-                    "--lfg-preflight  # re-check when FC run reaches terminal"
+                    "--lfg-gate-watch --json  # poll until active runs reach terminal"
                 ),
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
+                    "fc_sha_stale": True,
                 },
                 "forward_commits": {
                     "run_id": 26546235822,
@@ -2418,6 +3951,378 @@ last_verified: 2026-01-01
         )
         self.assertIn("preflight_watch", monitor)
         self.assertIn("--lfg-preflight-watch", monitor["preflight_watch"])
+        self.assertIn("gate_watch", monitor)
+        self.assertIn("--lfg-gate-watch", monitor["gate_watch"])
+        self.assertIn("prefetch_gate", briefing["post_terminal_commands"])
+        self.assertNotIn("preflight-watch", monitor["preflight_retry"])
+        self.assertTrue(briefing["watch_recommended"])
+        self.assertEqual(briefing["primary_action"], "gate_watch")
+        self.assertIn("--lfg-gate-watch", briefing["command"])
+        sha_gap = briefing["sha_gap"]
+        self.assertEqual(sha_gap["fc_head_sha"], None)
+        self.assertTrue(sha_gap["fc_sha_stale"])
+
+    def test_build_defer_sha_gap_detail_fc_active(self) -> None:
+        detail = mod._build_defer_sha_gap_detail(
+            {
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                    "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                    "queued_hours": 0.12,
+                },
+            }
+        )
+        self.assertIsNotNone(detail)
+        assert detail is not None
+        self.assertEqual(detail["short"], "7d85438:8916e2f")
+        self.assertEqual(detail["queued_hours"], 0.12)
+
+    def test_build_lfg_agent_briefing_defer_fc_active_sha_gap(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "lfg_deferred": True,
+                "lfg_defer_reason": "fc_active_pending",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                    "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "run_id": 26547475742,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                    "url": "https://example.com/runs/26547475742",
+                    "queued_hours": 0.1,
+                },
+            }
+        )
+        self.assertIn("sha_gap", briefing)
+        self.assertEqual(briefing["sha_gap"]["short"], "7d85438:8916e2f")
+
+    def test_apply_lfg_agent_briefing_sha_gap_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+            },
+            "forward_commits": {
+                "run_id": 26547475742,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "url": "https://example.com/runs/26547475742",
+                "queued_hours": 0.1,
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(status.get("sha_gap_short"), "7d85438:8916e2f")
+        sha_gap = status.get("sha_gap") or {}
+        self.assertEqual(sha_gap.get("short"), "7d85438:8916e2f")
+
+    def test_emit_lfg_strict_exit_stderr_sha_gap(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "lfg_agent_briefing": {
+                "sha_gap": {"short": "7d85438:8916e2f"},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("sha_gap=7d85438:8916e2f", err.getvalue())
+
+    def test_extract_gh_watch_command_prefers_fc(self) -> None:
+        command = mod._extract_gh_watch_command(
+            {
+                "monitor_commands": {
+                    "watch_verify_run": "gh run watch 1 --exit-status",
+                    "watch_fc_run": "gh run watch 2 --exit-status",
+                }
+            }
+        )
+        self.assertEqual(command, "gh run watch 2 --exit-status")
+
+    def test_extract_gh_watch_command_verify_only(self) -> None:
+        command = mod._extract_gh_watch_command(
+            {
+                "monitor_commands": {
+                    "watch_verify_run": "gh run watch 1 --exit-status",
+                }
+            }
+        )
+        self.assertEqual(command, "gh run watch 1 --exit-status")
+
+    def test_apply_lfg_agent_briefing_gh_watch_command_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+            "forward_commits": {
+                "run_id": 26546235822,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "url": "https://example.com/runs/26546235822",
+                "queued_hours": 0.1,
+            },
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(
+            status.get("gh_watch_command"),
+            "gh run watch 26546235822 --exit-status",
+        )
+
+    def test_emit_lfg_strict_exit_stderr_gh_watch_command(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "lfg_agent_briefing": {
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26546235822 --exit-status",
+                }
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("watch=gh run watch 26546235822 --exit-status", err.getvalue())
+
+    def test_format_preflight_watch_summary_line_gh_watch_command(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "gh_watch_command": "gh run watch 26546235822 --exit-status",
+            }
+        )
+        self.assertIn("watch=gh run watch 26546235822 --exit-status", line)
+
+    def test_format_briefing_command_stderr_truncates(self) -> None:
+        long_command = "python3 " + ("x" * 100)
+        formatted = mod._format_briefing_command_stderr(long_command)
+        self.assertTrue(formatted.endswith("..."))
+        self.assertLessEqual(len(formatted), 96)
+
+    def test_emit_lfg_strict_exit_stderr_briefing_command(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {
+                "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("briefing_command=", err.getvalue())
+        self.assertIn("--lfg-gate-watch", err.getvalue())
+
+    def test_format_preflight_watch_summary_line_briefing_command(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "briefing_command": (
+                    "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json"
+                ),
+            }
+        )
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
+    def test_build_defer_queue_context_severe(self) -> None:
+        context = mod._build_defer_queue_context(
+            {
+                "forward_commits": {"queued_hours": 4.2},
+                "checkpoint": {"queue_backlog_note": "FC queued 4.2h (external runner backlog)"},
+            }
+        )
+        self.assertTrue(context["queue_backlog"])
+        self.assertFalse(context["queue_backlog_warning"])
+        self.assertEqual(context["max_queued_hours"], 4.2)
+
+    def test_build_defer_queue_context_warning(self) -> None:
+        context = mod._build_defer_queue_context(
+            {"forward_commits": {"queued_hours": 2.5}}
+        )
+        self.assertFalse(context["queue_backlog"])
+        self.assertTrue(context["queue_backlog_warning"])
+        self.assertEqual(context["max_queued_hours"], 2.5)
+
+    def test_build_defer_expected_after_terminal_prefetch_gate(self) -> None:
+        expected = mod._build_defer_expected_after_terminal(
+            {
+                "preflight": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight --json",
+                "gate": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "prefetch_gate": "python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "prefetch_gate")
+        self.assertIn("--prefetch-git", expected["command"])
+
+    def test_build_defer_expected_after_terminal_prefers_closeout(self) -> None:
+        expected = mod._build_defer_expected_after_terminal(
+            {
+                "gate": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "closeout": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "closeout")
+
+    def test_build_active_runs_list(self) -> None:
+        active = mod._build_active_runs_list(
+            {
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+            }
+        )
+        self.assertEqual(active, ["fc"])
+
+    def test_defer_briefing_unchanged_active_runs(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "gh_ok": True,
+                "lfg_deferred": True,
+                "lfg_defer_reason": "unchanged_active_runs",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+                "checkpoint": {"defer_lfg_pr": True},
+                "verify_pypi": {
+                    "run_id": 26372746392,
+                    "status": "completed",
+                    "conclusion": "success",
+                },
+                "forward_commits": {
+                    "run_id": 26549293445,
+                    "status": "queued",
+                    "conclusion": "",
+                    "queued_hours": 0.3,
+                },
+            }
+        )
+        self.assertEqual(briefing["active_runs"], ["fc"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "closeout")
+        self.assertIn("closeout", briefing["post_terminal_commands"])
+
+    def test_emit_defer_briefing_stderr_active_runs(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "unchanged_active_runs",
+                    "active_runs": ["fc"],
+                    "expected_after_terminal": {"action": "closeout"},
+                }
+            )
+        self.assertIn("active_runs=fc", err.getvalue())
+        self.assertIn("expected_after=closeout", err.getvalue())
+
+    def test_format_gate_watch_poll_line_active_runs(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            1,
+            {
+                "lfg_defer_reason": "unchanged_active_runs",
+                "verify_pypi": {"run_id": 1, "status": "completed", "conclusion": "success"},
+                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+            },
+            watch_label="gate",
+        )
+        self.assertIn("active_runs=fc", line)
+
+    def test_defer_briefing_expected_after_terminal(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "gh_ok": True,
+                "lfg_deferred": True,
+                "lfg_defer_reason": "fc_active_pending",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "fc_stale_gap_pending_note": "FC queued on 573c9d4 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "run_id": 26548176325,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "573c9d4bb474ed3ffdb871d3e081431a51f31702",
+                    "queued_hours": 0.5,
+                },
+            }
+        )
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "prefetch_gate")
+
+    def test_emit_defer_briefing_stderr_expected_after_and_queue_warn(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "queue_context": {
+                        "max_queued_hours": 2.5,
+                        "queue_backlog_warning": True,
+                    },
+                    "expected_after_terminal": {
+                        "action": "prefetch_gate",
+                        "command": "python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("queue_warn=true", output)
+        self.assertIn("expected_after=prefetch_gate", output)
+        self.assertNotIn("queue_backlog=true", output)
+
+    def test_emit_defer_briefing_stderr_queue_backlog(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "watch_recommended": True,
+                    "primary_action": "gate_watch",
+                    "queue_context": {
+                        "queue_backlog_severe": True,
+                        "max_queued_hours": 4.2,
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("queue_backlog=true", output)
+        self.assertIn("queued=4.2h", output)
+
+    def test_emit_defer_briefing_stderr_queued_hours_not_severe(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "queue_context": {"max_queued_hours": 0.33},
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("queued=0.3h", output)
+        self.assertNotIn("queue_backlog=true", output)
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(
@@ -2438,7 +4343,9 @@ last_verified: 2026-01-01
                     "action": "defer",
                     "reason": "fc_active_pending",
                     "blocked": "deferred",
+                    "watch_recommended": True,
                     "fc_run_id": 26546235822,
+                    "sha_gap": {"short": "7d85438:8916e2f"},
                     "monitor_commands": {
                         "watch_fc_run": "gh run watch 26546235822 --exit-status",
                     },
@@ -2446,6 +4353,8 @@ last_verified: 2026-01-01
             )
         output = err.getvalue()
         self.assertIn("reason=fc_active_pending", output)
+        self.assertIn("watch_recommended=true", output)
+        self.assertIn("sha_gap=7d85438:8916e2f", output)
         self.assertIn("fc_run=26546235822", output)
         self.assertIn("watch=gh run watch 26546235822 --exit-status", output)
 
@@ -2484,6 +4393,31 @@ last_verified: 2026-01-01
         self.assertFalse(status.get("lfg_deferred"))
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("polls"), 2)
+        self.assertIn("next_hint", summary)
+
+    def test_resolve_lfg_mode_gate_watch(self) -> None:
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
+                lfg_merge_gate=False,
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_gate_watch=True,
+                lfg_preflight=True,
+                lfg_preflight_watch=True,
+                lfg_refresh=True,
+                lfg_pr_watch=False,
+                dry_run=True,
+            ),
+            "gate_watch",
+        )
+
+    def test_build_defer_post_terminal_commands(self) -> None:
+        commands = mod._build_defer_post_terminal_commands(
+            {"checkpoint": {"fc_sha_stale": True}}
+        )
+        self.assertIn("prefetch_gate", commands)
+        self.assertIn("--prefetch-git", commands["prefetch_gate"])
 
     def test_watch_lfg_preflight_defer_timeout(self) -> None:
         deferred_status = {
@@ -2511,6 +4445,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=False,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=True,
                 lfg_refresh=True,
@@ -2712,8 +4647,808 @@ last_verified: 2026-01-01
             },
             blocked="deferred",
         )
-        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("--lfg-gate-watch", hint)
         self.assertIn("terminal", hint)
+
+    def test_build_proceed_hint_investigate_drift_active_fc_gate_watch(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+            },
+            blocked=None,
+        )
+        self.assertIn("--lfg-gate-watch", hint)
+
+    def test_primary_watch_command_prefers_gate_watch(self) -> None:
+        command = mod._primary_watch_command(
+            {
+                "preflight_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+                "gate_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            }
+        )
+        self.assertIn("--lfg-gate-watch", command)
+
+    def test_format_preflight_watch_poll_line_includes_sha_gap(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            1,
+            {
+                "lfg_defer_reason": "fc_active_pending",
+                "checkpoint": {"master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"},
+                "forward_commits": {
+                    "run_id": 1,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "573c9d4bb474ed3ffdb871d3e081431a51f31702",
+                },
+            },
+        )
+        self.assertIn("sha_gap=573c9d4:8916e2f", line)
+        self.assertIn("preflight watch poll", line)
+
+    def test_format_deferred_watch_poll_line_sha_gap_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "queued_hours": 0.1,
+            },
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("sha_gap=7d85438:8916e2f", tokens)
+        self.assertEqual(sum(1 for token in tokens if token.startswith("sha_gap=")), 1)
+
+    def test_format_gate_watch_poll_line_sha_gap_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "queued_hours": 0.1,
+            },
+        }
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            status,
+            watch_label="gate",
+        )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("sha_gap=7d85438:8916e2f", tokens)
+        self.assertEqual(sum(1 for token in tokens if token.startswith("sha_gap=")), 1)
+
+    def test_format_gate_watch_poll_line_label(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            {"lfg_defer_reason": "fc_active_pending"},
+            watch_label="gate",
+        )
+        self.assertIn("gate watch poll", line)
+        self.assertNotIn("preflight watch poll", line)
+
+    def test_format_preflight_watch_poll_line_gh_watch(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "url": "https://example.com/runs/1",
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "url": "https://example.com/runs/2",
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("gh_watch=verify:1,fc:2", line)
+        self.assertIn("verify_run_url=https://example.com/runs/1", line)
+        self.assertIn("fc_run_url=https://example.com/runs/2", line)
+        self.assertEqual(line.count("gh_watch=verify:1,fc:2"), 1)
+        tokens = line.split()
+        self.assertIn("active_runs=verify,fc", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "active_runs=verify,fc"), 1)
+        self.assertIn("queued=1.5h", line)
+        tokens = line.split()
+        self.assertEqual(sum(1 for token in tokens if token == "queued=1.5h"), 1)
+        self.assertNotIn("verify_queued=1.5h", tokens)
+        self.assertNotIn("fc_queued=1.0h", tokens)
+        self.assertIn("expected_after=closeout", line)
+        self.assertIn("primary_action=gate_watch", line)
+        self.assertIn("watch_recommended=true", line)
+        self.assertIn("watch=gh run watch 2 --exit-status", line)
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_gate_watch_poll_line_primary_action_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("primary_action=gate_watch", tokens)
+        self.assertIn("expected_after=closeout", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "primary_action=gate_watch"), 1)
+        self.assertEqual(sum(1 for token in tokens if token == "expected_after=closeout"), 1)
+
+    def test_format_deferred_watch_poll_line_watch_commands_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("watch=gh run watch 2 --exit-status", line)
+        self.assertEqual(line.count("watch=gh run watch 2 --exit-status"), 1)
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_gate_watch_poll_line_watch_commands_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("watch=gh run watch 2 --exit-status", line)
+        self.assertIn("briefing_command=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_gate_watch_poll_line_active_runs_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "url": "https://example.com/runs/1",
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "url": "https://example.com/runs/2",
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("active_runs=verify,fc", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "active_runs=verify,fc"), 1)
+        self.assertIn("verify_run_url=https://example.com/runs/1", line)
+        self.assertIn("fc_run_url=https://example.com/runs/2", line)
+
+    def test_format_preflight_watch_poll_line_queue_note(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "verify queued 5.2h; FC queued 5.3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 5.2},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 5.3},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("queue_note=verify queued 5.2h", line)
+
+    def test_format_gate_watch_poll_line_queue_note(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("queue_note=Runner backlog ~3h", line)
+
+    def test_format_preflight_watch_poll_line_blocked(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("blocked=deferred", line)
+
+    def test_format_gate_watch_poll_line_blocked(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("blocked=deferred", line)
+
+    def test_format_preflight_watch_poll_line_briefing_reason(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("briefing_reason=unchanged_active_runs", line)
+
+    def test_format_gate_watch_poll_line_briefing_reason(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("briefing_reason=unchanged_active_runs", line)
+
+    def test_format_preflight_watch_poll_line_briefing_action(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("action=defer", line)
+
+    def test_format_gate_watch_poll_line_briefing_action(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("action=defer", line)
+
+    def test_format_preflight_watch_poll_line_briefing_notes(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("notes=1", line)
+
+    def test_format_gate_watch_poll_line_briefing_notes(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("notes=1", line)
+
+    def test_format_preflight_watch_poll_line_merge_ready(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("merge_ready=false", line)
+
+    def test_format_gate_watch_poll_line_merge_ready(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("merge_ready=false", line)
+
+    def test_format_preflight_watch_poll_line_run_ids(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("verify_run=1", tokens)
+        self.assertIn("fc_run=2", tokens)
+        self.assertNotIn("verify=1", tokens)
+        self.assertNotIn("fc=2", tokens)
+
+    def test_format_gate_watch_poll_line_run_ids(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        tokens = line.split()
+        self.assertIn("verify_run=1", tokens)
+        self.assertIn("fc_run=2", tokens)
+        self.assertNotIn("verify=1", tokens)
+        self.assertNotIn("fc=2", tokens)
+
+    def test_format_preflight_watch_poll_line_legacy_run_ids_when_not_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_defer_reason": "unchanged_active_runs",
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("verify=1", tokens)
+        self.assertIn("fc=2", tokens)
+        self.assertNotIn("verify_run=1", tokens)
+        self.assertNotIn("fc_run=2", tokens)
+
+    def test_format_preflight_watch_poll_line_per_run_queued_when_not_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_defer_reason": "unchanged_active_runs",
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("verify_queued=1.5h", tokens)
+        self.assertIn("fc_queued=1.0h", tokens)
+
+    def test_format_preflight_watch_poll_line_run_status_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertEqual(line.count("verify_status=queued"), 1)
+        self.assertEqual(line.count("fc_status=queued"), 1)
+
+    def test_format_gate_watch_poll_line_run_status_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertEqual(line.count("verify_status=queued"), 1)
+        self.assertEqual(line.count("fc_status=queued"), 1)
+
+    def test_format_gate_watch_poll_line_gh_watch_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertEqual(line.count("gh_watch=verify:1,fc:2"), 1)
+
+    def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("queued=2.5h", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queued=2.5h"), 1)
+        self.assertIn("queue_warn=true", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queue_warn=true"), 1)
+        self.assertNotIn("verify_queued=2.5h", tokens)
+        self.assertNotIn("fc_queued=1.0h", tokens)
+
+    def test_format_gate_watch_poll_line_queue_backlog_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 5.2},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 5.3},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("queue_backlog=true", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queue_backlog=true"), 1)
+        self.assertIn("queued=5.3h", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "queued=5.3h"), 1)
+
+    def test_format_preflight_watch_summary_line_includes_next_hint(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 3,
+                "watch_duration_sec": 12.0,
+                "next_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            }
+        )
+        self.assertIn("result=timeout", line)
+        self.assertIn("next=", line)
+        self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_preflight_watch_summary_line_reason_transition(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "proceed",
+                "polls": 4,
+                "watch_duration_sec": 30.0,
+                "start_defer_reason": "fc_active_pending",
+                "end_defer_reason": "investigate_ci_drift",
+            }
+        )
+        self.assertIn("reason=fc_active_pending->investigate_ci_drift", line)
+
+    def test_format_preflight_watch_summary_line_active_runs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "active_runs": ["verify", "fc"],
+            }
+        )
+        self.assertIn("active_runs=verify,fc", line)
+
+    def test_format_preflight_watch_summary_line_gh_watch(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "gh_watch_summary": "verify:1,fc:2",
+            }
+        )
+        self.assertIn("gh_watch=verify:1,fc:2", line)
+
+    def test_format_preflight_watch_summary_line_run_refs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "verify_run_id": 1,
+                "fc_run_id": 2,
+                "verify_run_url": "https://example.com/runs/1",
+                "fc_run_url": "https://example.com/runs/2",
+            }
+        )
+        self.assertIn("verify_run=1", line)
+        self.assertIn("fc_run=2", line)
+        self.assertIn("verify_run_url=https://example.com/runs/1", line)
+        self.assertIn("fc_run_url=https://example.com/runs/2", line)
+
+    def test_format_gate_watch_summary_line_run_refs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "verify_run_id": 1,
+                "fc_run_id": 2,
+                "verify_run_url": "https://example.com/runs/1",
+                "fc_run_url": "https://example.com/runs/2",
+            },
+            watch_label="gate",
+        )
+        self.assertIn("verify_run=1", line)
+        self.assertIn("fc_run=2", line)
+
+    def test_format_preflight_watch_summary_line_queued(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "max_queued_hours": 1.5,
+                "queue_backlog_warning": True,
+            }
+        )
+        self.assertIn("queued=1.5h", line)
+        self.assertIn("queue_warn=true", line)
+
+    def test_format_preflight_watch_summary_line_queued_prefers_top_level(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "max_queued_hours": 2.5,
+                "queue_backlog_warning": True,
+                "queue_context": {
+                    "max_queued_hours": 1.0,
+                    "queue_backlog_severe": True,
+                },
+            }
+        )
+        self.assertIn("queued=2.5h", line)
+        self.assertIn("queue_warn=true", line)
+        self.assertNotIn("queue_backlog=true", line)
+
+    def test_format_preflight_watch_summary_line_queued_queue_context_fallback(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "queue_context": {
+                    "max_queued_hours": 1.5,
+                    "queue_backlog_warning": True,
+                },
+            }
+        )
+        self.assertIn("queued=1.5h", line)
+        self.assertIn("queue_warn=true", line)
+
+    def test_format_preflight_watch_summary_line_expected_after(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "expected_after_terminal": {"action": "closeout"},
+                "primary_action": "gate_watch",
+            }
+        )
+        self.assertIn("expected_after=closeout", line)
+        self.assertIn("primary_action=gate_watch", line)
+
+    def test_format_preflight_watch_summary_line_watch_recommended(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "watch_recommended": True,
+            }
+        )
+        self.assertIn("watch_recommended=true", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}
@@ -3028,6 +5763,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=True,
                 lfg_gate=False,
+                lfg_gate_watch=False,
                 lfg_preflight=False,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3042,6 +5778,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3056,6 +5793,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=True,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3070,6 +5808,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3084,6 +5823,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=True,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
