@@ -28,6 +28,7 @@ from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -922,3 +923,43 @@ def test_diff_installation_forwards_merge_flags(
     assert "--merge-module" in captured_argv
     assert captured_argv.count("--merge-path") == 2
     assert "--merge-conflict-policy" in captured_argv
+
+
+class _FakeTtyStream:
+    def __init__(self, tty: bool) -> None:
+        self._tty = tty
+
+    def isatty(self) -> bool:
+        return self._tty
+
+
+@pytest.mark.parametrize(
+    ("env", "expected"),
+    [
+        ({"CI": "true"}, False),
+        ({"GITHUB_ACTIONS": "1"}, False),
+        ({}, True),
+    ],
+)
+def test_supports_live_progress_disables_in_ci(
+    env: dict[str, str],
+    expected: bool,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+
+    stream = _FakeTtyStream(tty=True)
+    assert _supports_live_progress(stream) is expected
+
+
+def test_supports_live_progress_requires_tty_when_not_in_ci(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+
+    assert _supports_live_progress(_FakeTtyStream(tty=False)) is False
+    assert _supports_live_progress(_FakeTtyStream(tty=True)) is True
