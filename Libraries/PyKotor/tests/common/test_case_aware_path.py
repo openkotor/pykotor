@@ -30,7 +30,7 @@ if __name__ == "__main__" and not __package__:
 
 from typing import TYPE_CHECKING
 
-from pykotor.tools.path import CaseAwarePath  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.tools.path import CaseAwarePath, clear_cache  # noqa: E402  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -136,6 +136,20 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath.str_norm("\\path//to/dir/", slash="/") == "/path/to/dir"
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="\\") == "\\path\\to\\dir"
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="/") == "/path/to/dir"
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX-specific case resolution behavior")
+    def test_clear_cache_refreshes_case_insensitive_directory_lookup(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = pathlib.Path(tmpdir) / "GameRoot"
+            root.mkdir()
+            (root / "dialog.tlk").write_bytes(b"tlk")
+            wrong_case = CaseAwarePath(root.parent / "gameroot" / "DIALOG.TLK")
+            assert wrong_case.name == "dialog.tlk"
+            (root / "dialog.tlk").unlink()
+            (root / "streamsounds").mkdir()
+            clear_cache()
+            nested = CaseAwarePath(root.parent / "GameRoot" / "StreamSounds")
+            assert nested.is_dir()
 
     @unittest.skipIf(sys.platform == "win32", "POSIX-specific case resolution behavior")
     def test_virtual_archive_segment_does_not_scan_file_path(self):
