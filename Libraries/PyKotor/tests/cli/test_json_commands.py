@@ -27,7 +27,9 @@ from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
+    _ExportProgressReporter,
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -326,6 +328,90 @@ def test_export_installation_to_json_tree_logs_percentage_progress(
     assert any(
         message == "Processed 4 resources (3 readable, 1 binary, 0 errors)" for message in messages
     )
+
+
+def test_supports_live_progress_false_when_ci_env_truthy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Automation must not rely on carriage-return stderr updates; log milestones instead."""
+    monkeypatch.setenv("CI", "true")
+
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+    assert _supports_live_progress(FakeTTY()) is False
+
+
+def test_supports_live_progress_false_when_github_actions_truthy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+    assert _supports_live_progress(FakeTTY()) is False
+
+
+def test_export_progress_reporter_logs_to_logger_when_ci_disables_live_updates(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    monkeypatch.setenv("CI", "true")
+
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+        def write(self, _s: str) -> None:
+            raise AssertionError("stderr live progress must not be used when CI is set")
+
+        def flush(self) -> None:
+            raise AssertionError("stderr live progress must not be used when CI is set")
+
+    log = logging.getLogger("pykotor.tests.resource_json_export_progress")
+    log.setLevel(logging.INFO)
+    with caplog.at_level(logging.INFO, logger=log.name):
+        progress = _ExportProgressReporter(log, total_resources=4, stream=FakeTTY())
+        assert progress.live_updates is False
+        progress.update(1, "dialog.tlk")
+        progress.finish()
+    messages = [record.getMessage() for record in caplog.records if record.name == log.name]
+    assert any("25.00% Writing dialog.tlk" in m for m in messages)
+
+
+def test_export_progress_reporter_writes_carriage_returns_when_not_ci_and_stream_is_tty(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+
+    writes: list[str] = []
+
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+        def write(self, s: str) -> None:
+            writes.append(s)
+
+        def flush(self) -> None:
+            pass
+
+    log = logging.getLogger("pykotor.tests.resource_json_export_progress_tty")
+    log.setLevel(logging.INFO)
+    with caplog.at_level(logging.INFO, logger=log.name):
+        progress = _ExportProgressReporter(log, total_resources=4, stream=FakeTTY())
+        assert progress.live_updates is True
+        progress.update(1, "dialog.tlk")
+        progress.finish()
+    assert any(w.startswith("\r") for w in writes)
+    assert not [r for r in caplog.records if r.name == log.name]
+    assert writes[-1].startswith("\r")
 
 
 def test_iter_installation_resource_documents_reuses_installation_export_shape(
