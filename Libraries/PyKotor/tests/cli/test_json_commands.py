@@ -28,11 +28,45 @@ from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
     serialize_resource_payload,
 )
+
+
+def test_supports_live_progress_disabled_in_ci(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _FakeTty:
+        def isatty(self) -> bool:
+            return True
+
+    monkeypatch.setenv("CI", "true")
+    assert _supports_live_progress(_FakeTty()) is False
+
+
+def test_supports_live_progress_disabled_in_github_actions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _FakeTty:
+        def isatty(self) -> bool:
+            return True
+
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    assert _supports_live_progress(_FakeTty()) is False
+
+
+def test_supports_live_progress_enabled_for_interactive_tty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _FakeTty:
+        def isatty(self) -> bool:
+            return True
+
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    assert _supports_live_progress(_FakeTty()) is True
 
 
 def test_to_json_and_from_json_roundtrip_tlk(tmp_path: Path) -> None:
