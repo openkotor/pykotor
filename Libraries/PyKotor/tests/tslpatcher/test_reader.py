@@ -250,6 +250,21 @@ class TestConfigReader(unittest.TestCase):
         if hasattr(self, "temp_dir"):
             shutil.rmtree(self.temp_dir, ignore_errors=True)
 
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "Case-mismatch path semantics differ on Windows filesystems.",
+    )
+    def test_from_filepath_resolves_case_mismatched_ini_path(self):
+        mod_dir = Path(self.temp_dir) / "ModDir"
+        mod_dir.mkdir()
+        ini_path = mod_dir / "changes.ini"
+        ini_path.write_text("[Settings]\nWindowCaption=CaseAware INI\n", encoding="utf-8")
+
+        reader = ConfigReader.from_filepath(Path(self.temp_dir) / "moddir" / "changes.ini")
+        reader.load_settings()
+
+        self.assertEqual(reader.config.window_title, "CaseAware INI")
+
     def create_test_tlk(self, data: dict[int, dict[str, str]]) -> TLK:
         tlk = TLK()
         for v in data.values():
