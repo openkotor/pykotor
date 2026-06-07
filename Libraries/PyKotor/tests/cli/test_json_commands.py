@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import logging
 
 from argparse import Namespace
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from loggerplus import RobustLogger
@@ -28,6 +30,7 @@ from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -922,3 +925,27 @@ def test_diff_installation_forwards_merge_flags(
     assert "--merge-module" in captured_argv
     assert captured_argv.count("--merge-path") == 2
     assert "--merge-conflict-policy" in captured_argv
+
+
+@pytest.mark.parametrize("env_name", ["CI", "GITHUB_ACTIONS"])
+@pytest.mark.parametrize("env_value", ["true", "1", "yes", "TRUE"])
+def test_supports_live_progress_disabled_in_ci_env(
+    env_name: str, env_value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tty_stream = io.StringIO()
+    monkeypatch.setenv(env_name, env_value)
+    with patch.object(tty_stream, "isatty", return_value=True):
+        assert _supports_live_progress(tty_stream) is False
+
+
+def test_supports_live_progress_follows_tty_when_not_in_ci(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tty_stream = io.StringIO()
+    non_tty_stream = io.StringIO()
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    with patch.object(tty_stream, "isatty", return_value=True):
+        assert _supports_live_progress(tty_stream) is True
+    with patch.object(non_tty_stream, "isatty", return_value=False):
+        assert _supports_live_progress(non_tty_stream) is False
