@@ -1850,5 +1850,25 @@ class TestConfigReader(unittest.TestCase):
     # endregion
 
 
+class TestConfigReaderFromFilepath(unittest.TestCase):
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "Case mismatch semantics differ on Windows filesystems.",
+    )
+    def test_from_filepath_resolves_case_mismatched_mod_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mod_root = Path(tmp) / "MyMod"
+            mod_root.mkdir()
+            ini_path = mod_root / "changes.ini"
+            ini_path.write_text(
+                "[Settings]\nLookupGameFolder=0\nLookupGameNumber=1\n",
+                encoding="utf-8",
+            )
+
+            reader = ConfigReader.from_filepath(mod_root.parent / "mymod" / "CHANGES.INI")
+            self.assertTrue(reader.mod_path.is_dir())
+            self.assertEqual(reader.mod_path.name, "MyMod")
+
+
 if __name__ == "__main__":
     unittest.main()
