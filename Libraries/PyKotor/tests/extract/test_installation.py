@@ -43,6 +43,15 @@ if TYPE_CHECKING:
 
 
 class TestInstallation(TestCase):
+    def test_create_installation_uses_modules_directory_casing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            install_path = Path(tmp) / "k1_install"
+            create_installation(install_path, Game.K1)
+
+            self.assertTrue((install_path / "Modules").is_dir())
+            if sys.platform != "win32":
+                self.assertFalse((install_path / "modules").exists())
+
     @classmethod
     def setUpClass(cls):
         # Create temporary directory for installation
