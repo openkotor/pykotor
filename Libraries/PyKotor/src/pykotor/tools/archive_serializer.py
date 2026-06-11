@@ -175,9 +175,9 @@ def _dict_to_erf(data: dict[str, Any]) -> bytes:
         payload = r["data"]
         raw = deserialize_embedded_resource_payload(enc, payload, restype)
         erf.set_data(ResRef(resref), restype, raw)
-    out = BytesIO()
+    out: bytearray = bytearray()
     write_erf(erf, out)
-    return out.getvalue()
+    return bytes(out)
 
 
 def _dict_to_rim(data: dict[str, Any]) -> bytes:
@@ -189,9 +189,9 @@ def _dict_to_rim(data: dict[str, Any]) -> bytes:
         payload = r["data"]
         raw = deserialize_embedded_resource_payload(enc, payload, restype)
         rim.set_data(ResRef(resref), restype, raw)
-    out = BytesIO()
+    out: bytearray = bytearray()
     write_rim(rim, out)
-    return out.getvalue()
+    return bytes(out)
 
 
 def _dict_to_bif(data: dict[str, Any]) -> bytes:

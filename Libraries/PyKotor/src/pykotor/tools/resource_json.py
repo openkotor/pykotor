@@ -778,7 +778,7 @@ def deserialize_embedded_resource_payload(
         return base64.b64decode(payload)
     if encoding == "gff_json":
         gff = read_gff(
-            BytesIO(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             file_format=ToolsetFormat.GFF_JSON,
         )
         output = bytearray()
@@ -786,7 +786,7 @@ def deserialize_embedded_resource_payload(
         return bytes(output)
     if encoding == "tlk_json":
         tlk = read_tlk(
-            BytesIO(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             file_format=ToolsetFormat.TLK_JSON,
         )
         output = bytearray()
@@ -794,7 +794,7 @@ def deserialize_embedded_resource_payload(
         return bytes(output)
     if encoding == "2da_json":
         twoda = read_2da(
-            BytesIO(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             file_format=ToolsetFormat.TwoDA_JSON,
         )
         output = bytearray()
@@ -802,7 +802,7 @@ def deserialize_embedded_resource_payload(
         return bytes(output)
     if encoding == "lip_json":
         lip = read_lip(
-            BytesIO(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             file_format=ToolsetFormat.LIP_JSON,
         )
         output = bytearray()
@@ -810,7 +810,7 @@ def deserialize_embedded_resource_payload(
         return bytes(output)
     if encoding == "ssf_json":
         ssf = read_ssf(
-            BytesIO(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
+            json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             file_format=ToolsetFormat.SSF_JSON,
         )
         output = bytearray()

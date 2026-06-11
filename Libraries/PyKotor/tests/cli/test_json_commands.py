@@ -151,6 +151,37 @@ def test_cmd_get_can_extract_from_folder_source(tmp_path: Path) -> None:
     output_path.unlink()
 
 
+def test_cmd_get_rejects_output_path_outside_cwd(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    workdir = tmp_path / "work"
+    workdir.mkdir()
+    source_dir = workdir / "source"
+    source_dir.mkdir()
+    (source_dir / "notes.txt").write_text("folder source", encoding="utf-8")
+
+    monkeypatch.chdir(workdir)
+    escape_path = workdir.parent / "escaped.txt"
+
+    args = Namespace(
+        resref="notes.txt",
+        path=str(source_dir),
+        game=None,
+        path_index=0,
+        source=None,
+        order=None,
+        output=str(escape_path),
+        format="binary",
+    )
+
+    with caplog.at_level(logging.ERROR):
+        assert cmd_get(args, logging.getLogger("test_cmd_get_path_safety")) == 1
+    assert "Output path rejected" in caplog.text
+    assert not escape_path.exists()
+
+
 def test_cmd_find_can_search_archive_source(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
