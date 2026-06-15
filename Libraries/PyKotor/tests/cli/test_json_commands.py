@@ -6,6 +6,7 @@ import logging
 
 from argparse import Namespace
 from pathlib import Path
+from typing import TextIO, cast
 
 import pytest
 from loggerplus import RobustLogger
@@ -27,7 +28,9 @@ from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
+    _ExportProgressReporter,
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -922,3 +925,56 @@ def test_diff_installation_forwards_merge_flags(
     assert "--merge-module" in captured_argv
     assert captured_argv.count("--merge-path") == 2
     assert "--merge-conflict-policy" in captured_argv
+
+
+def test_supports_live_progress_false_when_ci_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regression: CI must disable carriage-return progress even if stderr is a TTY."""
+    monkeypatch.setenv("CI", "true")
+
+    class TtyStream:
+        def isatty(self) -> bool:
+            return True
+
+    assert _supports_live_progress(TtyStream()) is False
+
+
+def test_supports_live_progress_false_when_github_actions_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "yes")
+
+    class TtyStream:
+        def isatty(self) -> bool:
+            return True
+
+    assert _supports_live_progress(TtyStream()) is False
+
+
+def test_export_progress_reporter_uses_logger_not_stream_when_ci_forces_non_tty(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Regression: percentage milestones must reach logging (caplog/aggregators) in automation."""
+    monkeypatch.setenv("CI", "true")
+
+    class StrictTTY:
+        def isatty(self) -> bool:
+            return True
+
+        def write(self, *_args: object, **_kwargs: object) -> None:
+            msg = "stream write must not be used when CI disables live progress"
+            raise AssertionError(msg)
+
+        def flush(self) -> None:
+            msg = "stream flush must not be used when CI disables live progress"
+            raise AssertionError(msg)
+
+    with caplog.at_level(logging.INFO):
+        progress = _ExportProgressReporter(RobustLogger(), 2, stream=cast(TextIO, StrictTTY()))
+        assert progress.live_updates is False
+        progress.update(1, "sample.txt")
+        progress.finish()
+
+    combined = caplog.text
+    assert "50.00%" in combined and "sample.txt" in combined

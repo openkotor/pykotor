@@ -45,6 +45,12 @@ def test_resource_bytes_to_plaintext_gff_from_raw_bytes() -> None:
     assert payload["fields"]["SomeField"]["value"] == 42
 
 
+def test_resource_bytes_to_plaintext_returns_none_when_only_base64_embedding() -> None:
+    """When embedded mode cannot produce a structured/plain payload, helper returns None."""
+    raw = bytes(range(256))
+    assert _resource_bytes_to_plaintext(raw, ResourceType.WAV) is None
+
+
 def test_gff_json_writer_binary_field_is_base64_ascii() -> None:
     """Binary GFF fields must serialize to JSON-safe base64 strings."""
     payload = b"\x00\xff\x01"
