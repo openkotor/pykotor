@@ -78,6 +78,18 @@ class TestTLK(unittest.TestCase):
         tlk = read_tlk(data)
         self.validate_io(tlk)
 
+    def test_xml_reader_self_closing_string_has_empty_text(self):
+        """Empty ``<string/>`` must load as empty dialogue text (not raise)."""
+        xml_doc = (
+            '<?xml version="1.0" encoding="utf-8"?>'
+            '<tlk language="0">'
+            '<string id="0"/>'
+            "</tlk>"
+        )
+        tlk = TLKXMLReader(xml_doc.encode("utf-8")).load()
+        self.assertEqual(tlk[0].text, "")
+        self.assertEqual(str(tlk[0].voiceover), "")
+
     def test_json_io(self):
         self.assertEqual(detect_tlk(JSON_TEST_DATA.encode("utf-8")), ResourceType.TLK_JSON)
 
