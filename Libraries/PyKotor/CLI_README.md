@@ -19,6 +19,7 @@ PyKotorCLI is a command-line tool for converting KOTOR modules, ERFs, and haks b
 - **Pure Python** - No external tool dependencies required (nwnnsscomp optional)
 - **Holocron kit generator** - Generate Holocron-compatible kits via `kit-generate` in headless mode or by launching the Tkinter GUI when no CLI args are provided
 - **GUI converter** - Resize KotOR `.gui` layouts to common resolutions (`gui-convert` headless, GUI when arguments are omitted)
+- **Batch texture conversion** - Convert `.tpc`, `.tga`, and `.png` files for texture editing workflows (`texture-convert`)
 - **Integrated KotorDiff** - Structured comparisons across files, modules, and installations; stays headless when CLI args are provided and launches the KotorDiff GUI when omitted or `--gui` is passed
 
 ## Installation
@@ -126,7 +127,23 @@ Interactive GUI (omit args):
 uvx --refresh pykotor gui-convert
 ```
 
-### 7. Run KotorDiff comparisons (headless or GUI)
+### 7. Batch texture conversion
+
+Use `texture-convert` for headless TGA/PNG/TPC conversions. PNG support requires Pillow;
+install with `pykotor[textures]` or `pykotor[all]`.
+
+```bash
+# AI edit loop: edited PNGs back to game-ready TGAs
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./edited_pngs --from-format png --to tga --output ./Override --recursive
+
+# Export TGAs to PNGs for editing
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./exported_tgas --from-format tga --to png --output ./png_work --recursive
+
+# One or more explicit files; defaults are TPC->TGA, TGA->TPC, PNG->TGA
+pykotor texture-convert texture_a.png texture_b.png --overwrite
+```
+
+### 8. Run KotorDiff comparisons (headless or GUI)
 
 Headless CLI (stays in the console when paths are provided):
 

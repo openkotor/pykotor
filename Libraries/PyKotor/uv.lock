@@ -3171,6 +3171,10 @@ render = [
     { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
+textures = [
+    { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "pillow", version = "12.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
 updater = [
     { name = "certifi" },
     { name = "pycryptodome" },
@@ -3202,13 +3206,15 @@ requires-dist = [
     { name = "numpy", marker = "python_full_version >= '3.9' and extra == 'gl'", specifier = ">=1.25" },
     { name = "numpy", marker = "python_full_version < '3.9' and extra == 'gl'", specifier = ">=1.22,<1.25" },
     { name = "pillow", marker = "python_full_version >= '3.10' and extra == 'font'", specifier = ">=12.1.1" },
+    { name = "pillow", marker = "python_full_version >= '3.10' and extra == 'textures'", specifier = ">=12.1.1" },
     { name = "pillow", marker = "python_full_version < '3.10' and extra == 'font'", specifier = ">=10.0.0,<11" },
+    { name = "pillow", marker = "python_full_version < '3.10' and extra == 'textures'", specifier = ">=10.0.0,<11" },
     { name = "ply", specifier = ">=3.11,<4" },
     { name = "psutil", marker = "extra == 'extra'", specifier = ">=7.2.2" },
     { name = "pycryptodome", marker = "extra == 'updater'", specifier = ">=3.19.0" },
     { name = "pyflakes", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.4.0" },
     { name = "pyglm", marker = "extra == 'gl'", specifier = ">=2.0,<2.9" },
-    { name = "pykotor", extras = ["encodings", "exp", "extra", "font", "gl", "updater"], marker = "extra == 'all'" },
+    { name = "pykotor", extras = ["encodings", "exp", "extra", "font", "textures", "gl", "updater"], marker = "extra == 'all'" },
     { name = "pylint", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.3.9" },
     { name = "pyopengl", marker = "extra == 'gl'", specifier = ">=3.1" },
     { name = "pytest", marker = "python_full_version >= '3.9' and extra == 'dev'", specifier = ">=7.0.0" },
@@ -3254,7 +3260,7 @@ requires-dist = [
     { name = "typing-extensions", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=4.5.0,<4.9.0" },
     { name = "typing-inspection", marker = "python_full_version >= '3.9' and extra == 'dev'", specifier = ">=0.4.2" },
 ]
-provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "gl", "gl-exp", "updater", "render"]
+provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "textures", "gl", "gl-exp", "updater", "render"]
 
 [[package]]
 name = "pylint"

@@ -169,11 +169,8 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
     )
     stream.write(header)
 
+    # TGA descriptor bit 5 declares a top-left origin, matching TGAImage.data.
     data = bytearray(image.data)
-    # Ensure origin is top-left; our in-memory data already is, but the TGA
-    # writer expects bottom-left order before optional flipping. We invert so
-    # that the stored data matches descriptor 0x20 (top origin).
-    _flip_vertically(data, width, height, 4)
 
     if not rle:
         for i in range(width * height):

@@ -61,7 +61,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
-all = ["pykotor[encodings,exp,extra,font,gl,updater]"]
+all = ["pykotor[encodings,exp,extra,font,textures,gl,updater]"]
 # Development dependencies
 dev = [
   "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
@@ -124,6 +124,10 @@ extra = [
   "psutil>=7.2.2",
 ]
 font = [
+  "pillow>=10.0.0,<11; python_version < \"3.10\"",
+  "pillow>=12.1.1; python_version >= \"3.10\"",
+]
+textures = [
   "pillow>=10.0.0,<11; python_version < \"3.10\"",
   "pillow>=12.1.1; python_version >= \"3.10\"",
 ]
@@ -219,6 +223,7 @@ encodings = ["charset-normalizer"]
 exp = ["fusepy", "pywin32"]
 extra = ["PyYAML", "Send2Trash", "colorama", "comtypes", "gputil", "psutil"]
 font = ["pillow"]
+textures = ["pillow"]
 gl = ["PyGLM", "PyOpenGL", "numpy"]
 gl_exp = ["moderngl"]
 updater = ["certifi", "pycryptodome", "requests"]

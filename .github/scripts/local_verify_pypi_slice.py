@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "114"
+PLAN_TRACK_CAP = "214"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -36,6 +36,42 @@ LFG_EXIT_CODES: dict[int, str] = {
         "from pr_ci_recommendation"
     ),
 }
+_LFG_RUN_REF_FIELDS = (
+    "verify_run_id",
+    "fc_run_id",
+    "verify_run_url",
+    "fc_run_url",
+    "verify_status",
+    "fc_status",
+)
+LFG_FLAT_FIELD_KEYS: tuple[str, ...] = (
+    "active_runs",
+    "gh_watch_summary",
+    "queue_context",
+    "queue_backlog",
+    "queue_backlog_severe",
+    "queue_backlog_warning",
+    "max_queued_hours",
+    "queue_backlog_note",
+    "expected_after_terminal",
+    "primary_action",
+    "watch_recommended",
+    "post_terminal_commands",
+    "wait_command",
+    "briefing_command",
+    "monitor_commands",
+    *_LFG_RUN_REF_FIELDS,
+    "blocked",
+    "briefing_action",
+    "briefing_reason",
+    "briefing_notes",
+    "briefing_merge_ready",
+    "sha_gap",
+    "sha_gap_short",
+    "gh_watch_command",
+    "wait_recommended",
+    "ci_drift",
+)
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -74,6 +110,7 @@ _TERMINAL_CONCLUSIONS = frozenset(
 )
 _ACTIVE_STATUSES = frozenset({"queued", "in_progress", "pending", "waiting", "requested"})
 _QUEUE_BACKLOG_HOURS = 4.0
+_QUEUE_WARN_HOURS = 2.0
 
 CORE_CHECK = """
 import pykotor
@@ -493,8 +530,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         queue_suffix = ""
         if isinstance(queued_hours, (int, float)):
             queue_suffix = f"; queued {queued_hours:.1f}h"
-        result.update(
-            {
+        pending_update: dict[str, Any] = {
                 "checkpoint_unchanged": True,
                 "defer_lfg_pr": True,
                 "defer_reason": "FC run still active; classify SHA gap after terminal",
@@ -503,7 +539,11 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                     f"vs master {master_sha[:7] if master_sha else '?'}{queue_suffix}"
                 ),
             }
-        )
+        if isinstance(queued_hours, (int, float)) and queued_hours >= _QUEUE_BACKLOG_HOURS:
+            pending_update["queue_backlog_note"] = (
+                f"FC queued {queued_hours:.1f}h (external runner backlog)"
+            )
+        result.update(pending_update)
         return result
 
     if fc_sha_stale and fc_sha_stale_benign is None:
@@ -1644,21 +1684,358 @@ def _is_lfg_checkpoint_deferred(status: dict[str, Any]) -> bool:
     return isinstance(checkpoint, dict) and bool(checkpoint.get("defer_lfg_pr"))
 
 
-def _format_preflight_watch_poll_line(polls: int, status: dict[str, Any]) -> str:
+def _extract_gh_watch_command(briefing: dict[str, Any]) -> str | None:
+    monitor_commands = briefing.get("monitor_commands")
+    if not isinstance(monitor_commands, dict):
+        return None
+    watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
+        "watch_verify_run"
+    )
+    if isinstance(watch_cmd, str) and watch_cmd:
+        return watch_cmd
+    return None
+
+
+def _primary_watch_command(commands: dict[str, str]) -> str:
+    gate_watch = commands.get("gate_watch")
+    if isinstance(gate_watch, str) and gate_watch:
+        return gate_watch
+    preflight_watch = commands.get("preflight_watch")
+    if isinstance(preflight_watch, str) and preflight_watch:
+        return preflight_watch
+    return ""
+
+
+def _watch_label_display(watch_label: str) -> str:
+    normalized = watch_label.strip().lower()
+    if normalized == "gate":
+        return "gate watch"
+    return "preflight watch"
+
+
+def _lfg_briefing_fallback(status: dict[str, Any]) -> dict[str, Any]:
+    briefing = status.get("lfg_agent_briefing")
+    if isinstance(briefing, dict):
+        return briefing
+    if isinstance(status.get("action"), str):
+        return status
+    return {}
+
+
+def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
+    parts: list[str] = []
+    briefing = _lfg_briefing_fallback(status)
+
+    primary_action = status.get("primary_action")
+    if not isinstance(primary_action, str) or not primary_action:
+        primary_action = briefing.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        parts.append(f"primary_action={primary_action}")
+
+    expected_after = status.get("expected_after_terminal")
+    if not isinstance(expected_after, dict):
+        expected_after = briefing.get("expected_after_terminal")
+    if isinstance(expected_after, dict):
+        after_action = expected_after.get("action")
+        if isinstance(after_action, str) and after_action:
+            parts.append(f"expected_after={after_action}")
+
+    active_runs = status.get("active_runs")
+    if not isinstance(active_runs, list) or not active_runs:
+        active_runs = briefing.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
+
+    watch_recommended = status.get("watch_recommended")
+    if not watch_recommended:
+        watch_recommended = briefing.get("watch_recommended")
+    if watch_recommended:
+        parts.append("watch_recommended=true")
+
+    gh_watch_command = status.get("gh_watch_command")
+    if not isinstance(gh_watch_command, str) or not gh_watch_command:
+        gh_watch_command = _extract_gh_watch_command(briefing)
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        parts.append(f"watch={gh_watch_command}")
+
+    command = status.get("briefing_command") or status.get("wait_command")
+    if not isinstance(command, str) or not command:
+        command = briefing.get("command")
+    if isinstance(command, str) and command:
+        parts.append(f"briefing_command={_format_briefing_command_stderr(command)}")
+
+    sha_gap_short = status.get("sha_gap_short")
+    if not isinstance(sha_gap_short, str) or not sha_gap_short:
+        sha_gap_short = _format_briefing_sha_gap_short(briefing)
+    if isinstance(sha_gap_short, str) and sha_gap_short:
+        parts.append(f"sha_gap={sha_gap_short}")
+
+    queue_note = status.get("queue_backlog_note")
+    if not isinstance(queue_note, str) or not queue_note:
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            nested_note = queue_context.get("note")
+            if isinstance(nested_note, str) and nested_note:
+                queue_note = nested_note
+    if isinstance(queue_note, str) and queue_note:
+        parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
+
+    blocked = status.get("blocked")
+    if not isinstance(blocked, str) or not blocked:
+        blocked = briefing.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        parts.append(f"blocked={blocked}")
+
+    briefing_reason = status.get("briefing_reason")
+    if not isinstance(briefing_reason, str) or not briefing_reason:
+        briefing_reason = briefing.get("reason")
+    if isinstance(briefing_reason, str) and briefing_reason:
+        parts.append(f"briefing_reason={briefing_reason}")
+
+    briefing_action = status.get("briefing_action")
+    if not isinstance(briefing_action, str) or not briefing_action:
+        briefing_action = briefing.get("action")
+    if isinstance(briefing_action, str) and briefing_action:
+        parts.append(f"action={briefing_action}")
+
+    notes = status.get("briefing_notes")
+    if not isinstance(notes, list) or not notes:
+        notes = briefing.get("notes")
+    if isinstance(notes, list) and notes:
+        parts.append(f"notes={len(notes)}")
+
+    if "briefing_merge_ready" in status:
+        parts.append(
+            f"merge_ready={'true' if status['briefing_merge_ready'] else 'false'}"
+        )
+    else:
+        merge_ready = _format_briefing_merge_ready(briefing)
+        if merge_ready is not None:
+            parts.append(f"merge_ready={merge_ready}")
+
+    verify_run_id = status.get("verify_run_id")
+    if verify_run_id is None:
+        verify_run_id = briefing.get("verify_run_id")
+    if verify_run_id is not None:
+        parts.append(f"verify_run={verify_run_id}")
+
+    fc_run_id = status.get("fc_run_id")
+    if fc_run_id is None:
+        fc_run_id = briefing.get("fc_run_id")
+    if fc_run_id is not None:
+        parts.append(f"fc_run={fc_run_id}")
+
+    verify_run_url = status.get("verify_run_url")
+    if not isinstance(verify_run_url, str) or not verify_run_url:
+        verify_run_url = briefing.get("verify_run_url")
+    if isinstance(verify_run_url, str) and verify_run_url:
+        parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
+
+    fc_run_url = status.get("fc_run_url")
+    if not isinstance(fc_run_url, str) or not fc_run_url:
+        fc_run_url = briefing.get("fc_run_url")
+    if isinstance(fc_run_url, str) and fc_run_url:
+        parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
+
+    verify_status = status.get("verify_status")
+    if not isinstance(verify_status, str) or not verify_status:
+        verify_status = briefing.get("verify_status")
+    if isinstance(verify_status, str) and verify_status:
+        parts.append(f"verify_status={verify_status}")
+
+    fc_status = status.get("fc_status")
+    if not isinstance(fc_status, str) or not fc_status:
+        fc_status = briefing.get("fc_status")
+    if isinstance(fc_status, str) and fc_status:
+        parts.append(f"fc_status={fc_status}")
+
+    gh_watch_summary = status.get("gh_watch_summary")
+    if not isinstance(gh_watch_summary, str) or not gh_watch_summary:
+        gh_watch_summary = briefing.get("gh_watch_summary")
+    if not isinstance(gh_watch_summary, str) or not gh_watch_summary:
+        gh_watch_summary = _format_gh_watch_summary(briefing)
+    if isinstance(gh_watch_summary, str) and gh_watch_summary:
+        parts.append(f"gh_watch={gh_watch_summary}")
+
+    max_queued = status.get("max_queued_hours")
+    queue_backlog_severe = status.get("queue_backlog_severe")
+    queue_backlog = status.get("queue_backlog")
+    queue_backlog_warning = status.get("queue_backlog_warning")
+    if not isinstance(max_queued, (int, float)):
+        own_queue_context = status.get("queue_context")
+        if isinstance(own_queue_context, dict):
+            nested_queued = own_queue_context.get("max_queued_hours")
+            if isinstance(nested_queued, (int, float)):
+                max_queued = nested_queued
+            if not queue_backlog_severe and not queue_backlog:
+                queue_backlog_severe = own_queue_context.get("queue_backlog_severe")
+                queue_backlog = own_queue_context.get("queue_backlog")
+                queue_backlog_warning = own_queue_context.get("queue_backlog_warning")
+    if not isinstance(max_queued, (int, float)):
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            nested_queued = queue_context.get("max_queued_hours")
+            if isinstance(nested_queued, (int, float)):
+                max_queued = nested_queued
+            if not queue_backlog_severe and not queue_backlog:
+                queue_backlog_severe = queue_context.get("queue_backlog_severe")
+                queue_backlog = queue_context.get("queue_backlog")
+                queue_backlog_warning = queue_context.get("queue_backlog_warning")
+    if isinstance(max_queued, (int, float)):
+        parts.append(f"queued={float(max_queued):.1f}h")
+    if queue_backlog_severe or queue_backlog:
+        parts.append("queue_backlog=true")
+    elif queue_backlog_warning:
+        parts.append("queue_warn=true")
+
+    action = status.get("briefing_action")
+    if not isinstance(action, str) or not action:
+        action = status.get("action")
+    if not isinstance(action, str) or not action:
+        action = briefing.get("action")
+    wait_recommended = status.get("wait_recommended")
+    if wait_recommended is None:
+        wait_recommended = briefing.get("wait_recommended")
+    if action == "investigate_ci_drift" and wait_recommended:
+        parts.append("wait=true")
+    drift_fields = _lfg_briefing_drift_field_names(status)
+    if drift_fields:
+        parts.append(f"drift_fields={','.join(drift_fields)}")
+
+    parts.extend(_lfg_flat_field_mirror_stderr_parts(status))
+
+    return parts
+
+
+def _format_preflight_watch_poll_line(
+    polls: int,
+    status: dict[str, Any],
+    *,
+    watch_label: str = "preflight",
+    previous_flat_keys: list[str] | None = None,
+    flat_keys_unchanged_streak: int = 0,
+    flat_keys_heartbeat_polls: int = 12,
+    flat_keys_heartbeat_count: int | None = None,
+) -> str:
     reason = status.get("lfg_defer_reason") or "deferred"
-    parts = [f"LFG preflight watch poll {polls}: deferred=true reason={reason}"]
+    label = _watch_label_display(watch_label)
+    parts = [f"LFG {label} poll {polls}: deferred=true reason={reason}"]
+    emit_briefing_status = bool(status.get("lfg_deferred"))
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict):
+        master_sha = checkpoint.get("master_sha")
+        forward_commits = status.get("forward_commits")
+        fc_head = (
+            forward_commits.get("head_sha")
+            if isinstance(forward_commits, dict)
+            else None
+        )
+        if (
+            isinstance(master_sha, str)
+            and isinstance(fc_head, str)
+            and not emit_briefing_status
+        ):
+            parts.append(f"sha_gap={fc_head[:7]}:{master_sha[:7]}")
     for key, label in (("forward_commits", "fc"), ("verify_pypi", "verify")):
         run = status.get(key)
         if not isinstance(run, dict) or "error" in run:
             continue
         run_id = run.get("run_id")
-        if run_id is not None:
+        if run_id is not None and not emit_briefing_status:
             parts.append(f"{label}={run_id}")
-        parts.append(f"{label}_status={_run_display_label(run)}")
+        if not emit_briefing_status:
+            parts.append(f"{label}_status={_run_display_label(run)}")
         queued = run.get("queued_hours")
-        if isinstance(queued, (int, float)):
+        if isinstance(queued, (int, float)) and not emit_briefing_status:
             parts.append(f"{label}_queued={queued:.1f}h")
+    if not emit_briefing_status:
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            parts.append(f"active_runs={','.join(active_runs)}")
+        gh_watch = _build_gh_watch_from_status(status)
+        if gh_watch:
+            parts.append(f"gh_watch={gh_watch}")
+        queue_context = _build_defer_queue_context(status)
+        max_queued = queue_context.get("max_queued_hours")
+        if isinstance(max_queued, (int, float)):
+            parts.append(f"queued={float(max_queued):.1f}h")
+        if queue_context.get("queue_backlog_severe"):
+            parts.append("queue_backlog=true")
+        elif queue_context.get("queue_backlog_warning"):
+            parts.append("queue_warn=true")
+    if status.get("lfg_deferred"):
+        _apply_lfg_agent_briefing(status)
+        mirror_parts = _lfg_briefing_mirror_stderr_parts(status)
+        current_flat_keys = _lfg_flat_field_keys_present_stderr(status)
+        flat_keys_unchanged = (
+            previous_flat_keys is not None
+            and current_flat_keys
+            and previous_flat_keys == current_flat_keys
+        )
+        parts.extend(
+            _preflight_watch_poll_flat_stderr_parts(
+                mirror_parts,
+                flat_keys_unchanged=flat_keys_unchanged,
+                flat_keys_unchanged_streak=flat_keys_unchanged_streak,
+                flat_keys_heartbeat_polls=flat_keys_heartbeat_polls,
+                flat_keys_heartbeat_count=flat_keys_heartbeat_count,
+            )
+        )
     return " ".join(parts)
+
+
+def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    if len(history) < 2:
+        return 0
+    count = 0
+    for index in range(1, len(history)):
+        prev_keys = history[index - 1].get("flat_keys")
+        curr_keys = history[index].get("flat_keys")
+        if (
+            isinstance(prev_keys, list)
+            and isinstance(curr_keys, list)
+            and prev_keys
+            and prev_keys == curr_keys
+        ):
+            count += 1
+    return count
+
+
+def _max_preflight_flat_unchanged_streak(history: list[dict[str, Any]]) -> int:
+    max_streak = 0
+    for entry in history:
+        streak = entry.get("flat_unchanged")
+        if isinstance(streak, int) and streak > max_streak:
+            max_streak = streak
+    return max_streak
+
+
+def _max_preflight_flat_hb_total(history: list[dict[str, Any]]) -> int:
+    max_hb = 0
+    for entry in history:
+        hb = entry.get("flat_hb_total")
+        if not isinstance(hb, int) or hb <= 0:
+            hb = entry.get("flat_hb")
+        if isinstance(hb, int) and hb > max_hb:
+            max_hb = hb
+    return max_hb
+
+
+def _resolve_preflight_flat_keys_heartbeats(
+    status: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> int:
+    heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
+    if heartbeats > 0:
+        return heartbeats
+    return _max_preflight_flat_hb_total(history)
+
+
+def _resolve_preflight_unchanged_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    unchanged = _count_unchanged_preflight_flat_keys_polls(history)
+    if unchanged > 0:
+        return unchanged
+    return _max_preflight_flat_unchanged_streak(history)
 
 
 def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
@@ -1672,21 +2049,202 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     if history:
         first_reason = history[0].get("lfg_defer_reason")
         last_reason = history[-1].get("lfg_defer_reason")
-    return {
+    watch_heartbeat_polls = int(status.get("preflight_watch_heartbeat_polls") or 0)
+    flat_keys_heartbeats = _resolve_preflight_flat_keys_heartbeats(status, history)
+    unchanged_flat_keys_polls = _resolve_preflight_unchanged_flat_keys_polls(history)
+    max_flat_unchanged = _max_preflight_flat_unchanged_streak(history)
+    summary: dict[str, Any] = {
         "polls": len(history),
         "lfg_preflight_watch_result": status.get("lfg_preflight_watch_result"),
         "start_defer_reason": first_reason,
         "end_defer_reason": last_reason,
         "watch_duration_sec": duration_sec,
+        "unchanged_flat_keys_polls": unchanged_flat_keys_polls,
+        "flat_keys_heartbeat_polls": flat_keys_heartbeats,
+        "watch_heartbeat_polls": watch_heartbeat_polls,
     }
+    if watch_heartbeat_polls > 0:
+        summary["heartbeat_every"] = watch_heartbeat_polls
+    if flat_keys_heartbeats > 0:
+        summary["flat_hb"] = flat_keys_heartbeats
+        summary["flat_hb_total"] = flat_keys_heartbeats
+    if isinstance(unchanged_flat_keys_polls, int) and unchanged_flat_keys_polls > 0:
+        summary["flat_unchanged"] = unchanged_flat_keys_polls
+    if max_flat_unchanged > 0:
+        summary["max_flat_unchanged"] = max_flat_unchanged
+    return summary
 
 
-def _format_preflight_watch_summary_line(summary: dict[str, Any]) -> str:
+def _preflight_unchanged_flat_keys_polls(summary: dict[str, Any]) -> int:
+    flat_unchanged = summary.get("flat_unchanged")
+    if isinstance(flat_unchanged, int) and flat_unchanged > 0:
+        return flat_unchanged
+    unchanged = summary.get("unchanged_flat_keys_polls")
+    if isinstance(unchanged, int) and unchanged > 0:
+        return unchanged
+    return 0
+
+
+def _preflight_flat_keys_heartbeat_count(summary: dict[str, Any]) -> int:
+    flat_hb_total = summary.get("flat_hb_total")
+    if isinstance(flat_hb_total, int) and flat_hb_total > 0:
+        return flat_hb_total
+    flat_hb = summary.get("flat_hb")
+    if isinstance(flat_hb, int) and flat_hb > 0:
+        return flat_hb
+    heartbeats = summary.get("flat_keys_heartbeat_polls")
+    if isinstance(heartbeats, int) and heartbeats > 0:
+        return heartbeats
+    return 0
+
+
+def _preflight_watch_heartbeat_interval(summary: dict[str, Any]) -> int:
+    heartbeat_every = summary.get("heartbeat_every")
+    if isinstance(heartbeat_every, int) and heartbeat_every > 0:
+        return heartbeat_every
+    watch_heartbeat = summary.get("watch_heartbeat_polls")
+    if isinstance(watch_heartbeat, int) and watch_heartbeat > 0:
+        return watch_heartbeat
+    return 0
+
+
+def _preflight_max_flat_unchanged(summary: dict[str, Any]) -> int:
+    max_flat = summary.get("max_flat_unchanged")
+    if isinstance(max_flat, int) and max_flat > 0:
+        return max_flat
+    return 0
+
+
+def _preflight_max_flat_unchanged_for_stderr(summary: dict[str, Any]) -> int:
+    unchanged = _preflight_unchanged_flat_keys_polls(summary)
+    max_flat = _preflight_max_flat_unchanged(summary)
+    if unchanged > 0 and max_flat > 0 and max_flat < unchanged:
+        return max_flat
+    return 0
+
+
+def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) -> bool:
+    heartbeats = _preflight_flat_keys_heartbeat_count(summary)
+    if heartbeats <= 0:
+        return False
+    unchanged = _preflight_unchanged_flat_keys_polls(summary)
+    if unchanged <= 0:
+        return False
+    interval = _preflight_watch_heartbeat_interval(summary)
+    if interval <= 0:
+        return True
+    return unchanged >= interval
+
+
+def _preflight_flat_hb_total_for_stderr(summary: dict[str, Any]) -> int:
+    if not _should_emit_preflight_flat_keys_heartbeat_summary(summary):
+        return 0
+    return _preflight_flat_keys_heartbeat_count(summary)
+
+
+def _preflight_heartbeat_every_for_stderr(summary: dict[str, Any]) -> int:
+    if _preflight_unchanged_flat_keys_polls(summary) <= 0:
+        return 0
+    return _preflight_watch_heartbeat_interval(summary)
+
+
+def _preflight_watch_poll_flat_stderr_parts(
+    mirror_parts: list[str],
+    *,
+    flat_keys_unchanged: bool,
+    flat_keys_unchanged_streak: int,
+    flat_keys_heartbeat_polls: int,
+    flat_keys_heartbeat_count: int | None = None,
+) -> list[str]:
+    emit_flat_keys_heartbeat = _should_emit_watch_heartbeat(
+        flat_keys_unchanged,
+        flat_keys_unchanged_streak,
+        flat_keys_heartbeat_polls,
+    )
+    if flat_keys_unchanged and not emit_flat_keys_heartbeat:
+        parts = [
+            part
+            for part in mirror_parts
+            if not part.startswith("flat_keys=")
+            and not part.startswith("flat_fields=")
+        ]
+        parts.append(
+            f"flat_unchanged={flat_keys_unchanged_streak if flat_keys_unchanged_streak > 0 else 1}"
+        )
+    elif flat_keys_unchanged and emit_flat_keys_heartbeat:
+        parts = list(mirror_parts)
+        heartbeat_count = (
+            flat_keys_heartbeat_count
+            if isinstance(flat_keys_heartbeat_count, int) and flat_keys_heartbeat_count > 0
+            else 1
+        )
+        parts.append(f"flat_hb={heartbeat_count}")
+    else:
+        parts = list(mirror_parts)
+    if flat_keys_unchanged and flat_keys_heartbeat_polls > 0:
+        parts.append(f"heartbeat_every={flat_keys_heartbeat_polls}")
+    return parts
+
+
+def _preflight_watch_summary_unchanged_flat_stderr_parts(
+    summary: dict[str, Any],
+) -> list[str]:
+    parts: list[str] = []
+    unchanged_flat = _preflight_unchanged_flat_keys_polls(summary)
+    if unchanged_flat:
+        parts.append(f"flat_unchanged={unchanged_flat}")
+        max_flat_unchanged = _preflight_max_flat_unchanged_for_stderr(summary)
+        if max_flat_unchanged > 0:
+            parts.append(f"max_flat_unchanged={max_flat_unchanged}")
+        heartbeat_interval = _preflight_heartbeat_every_for_stderr(summary)
+        if heartbeat_interval > 0:
+            parts.append(f"heartbeat_every={heartbeat_interval}")
+    return parts
+
+
+def _preflight_watch_summary_heartbeat_flat_stderr_parts(
+    summary: dict[str, Any],
+) -> list[str]:
+    parts: list[str] = []
+    flat_hb_total = _preflight_flat_hb_total_for_stderr(summary)
+    if flat_hb_total > 0:
+        parts.append(f"flat_hb_total={flat_hb_total}")
+    return parts
+
+
+def _preflight_watch_summary_flat_stderr_parts(summary: dict[str, Any]) -> list[str]:
+    parts = _preflight_watch_summary_unchanged_flat_stderr_parts(summary)
+    parts.extend(_preflight_watch_summary_heartbeat_flat_stderr_parts(summary))
+    return parts
+
+
+def _format_preflight_watch_summary_line(
+    summary: dict[str, Any],
+    *,
+    watch_label: str = "preflight",
+) -> str:
     result = summary.get("lfg_preflight_watch_result") or "unknown"
     polls = summary.get("polls", 0)
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
-    return f"result={result} polls={polls} duration={duration_text}"
+    parts = [f"result={result} polls={polls} duration={duration_text}"]
+    parts.extend(_preflight_watch_summary_flat_stderr_parts(summary))
+    start_reason = summary.get("start_defer_reason")
+    end_reason = summary.get("end_defer_reason")
+    if (
+        isinstance(start_reason, str)
+        and isinstance(end_reason, str)
+        and start_reason
+        and end_reason
+        and start_reason != end_reason
+    ):
+        parts.append(f"reason={start_reason}->{end_reason}")
+    next_hint = summary.get("next_hint")
+    if isinstance(next_hint, str) and next_hint:
+        hint = next_hint if len(next_hint) <= 96 else f"{next_hint[:93]}..."
+        parts.append(f"next={hint}")
+    parts.extend(_lfg_briefing_mirror_stderr_parts(summary))
+    return " ".join(parts)
 
 
 def _watch_lfg_preflight_defer(
@@ -1695,6 +2253,8 @@ def _watch_lfg_preflight_defer(
     prefetch_git: bool,
     interval_sec: float,
     timeout_sec: float,
+    watch_label: str = "preflight",
+    flat_keys_heartbeat_polls: int = 12,
 ) -> dict[str, Any]:
     deadline = time.monotonic() + max(0.0, timeout_sec)
     polls = 0
@@ -1702,6 +2262,10 @@ def _watch_lfg_preflight_defer(
     status: dict[str, Any] = {}
     status["preflight_watch_started_monotonic"] = time.monotonic()
     watch_result = "proceed"
+    previous_flat_keys: list[str] | None = None
+    flat_keys_unchanged_streak = 0
+    status["preflight_flat_keys_heartbeats"] = 0
+    status["preflight_watch_heartbeat_polls"] = max(0, flat_keys_heartbeat_polls)
     while True:
         polls += 1
         prefetch_result = None
@@ -1736,8 +2300,53 @@ def _watch_lfg_preflight_defer(
                 queued = run.get("queued_hours")
                 if isinstance(queued, (int, float)):
                     snapshot[f"{prefix}_queued_hours"] = round(float(queued), 2)
+        current_flat_keys: list[str] = []
+        if status.get("lfg_deferred"):
+            _apply_lfg_agent_briefing(status)
+            current_flat_keys = _lfg_flat_field_keys_present_stderr(status)
+            if (
+                previous_flat_keys is not None
+                and current_flat_keys
+                and previous_flat_keys == current_flat_keys
+            ):
+                flat_keys_unchanged_streak += 1
+            else:
+                flat_keys_unchanged_streak = 0
+        flat_keys_unchanged = (
+            previous_flat_keys is not None
+            and current_flat_keys
+            and previous_flat_keys == current_flat_keys
+        )
+        emit_flat_keys_heartbeat = _should_emit_watch_heartbeat(
+            flat_keys_unchanged,
+            flat_keys_unchanged_streak,
+            flat_keys_heartbeat_polls,
+        )
+        heartbeat_count = int(status.get("preflight_flat_keys_heartbeats") or 0)
+        if emit_flat_keys_heartbeat:
+            heartbeat_count += 1
+        print(
+            _format_preflight_watch_poll_line(
+                polls,
+                status,
+                watch_label=watch_label,
+                previous_flat_keys=previous_flat_keys,
+                flat_keys_unchanged_streak=flat_keys_unchanged_streak,
+                flat_keys_heartbeat_polls=flat_keys_heartbeat_polls,
+                flat_keys_heartbeat_count=heartbeat_count if emit_flat_keys_heartbeat else None,
+            ),
+            file=sys.stderr,
+        )
+        if current_flat_keys:
+            snapshot["flat_keys"] = list(current_flat_keys)
+            if flat_keys_unchanged_streak > 0:
+                snapshot["flat_unchanged"] = flat_keys_unchanged_streak
+            if emit_flat_keys_heartbeat:
+                status["preflight_flat_keys_heartbeats"] = heartbeat_count
+                snapshot["flat_hb"] = heartbeat_count
+                snapshot["flat_hb_total"] = heartbeat_count
+            previous_flat_keys = current_flat_keys
         history.append(snapshot)
-        print(_format_preflight_watch_poll_line(polls, status), file=sys.stderr)
         if not still_deferred:
             watch_result = "proceed"
             break
@@ -1749,11 +2358,40 @@ def _watch_lfg_preflight_defer(
     status["preflight_watch_polls"] = polls
     status["lfg_preflight_watch_result"] = watch_result
     summary = _build_preflight_watch_summary(status)
+    blocked = _lfg_refresh_blocked(status, deferred=bool(status.get("lfg_deferred")))
+    summary["next_hint"] = _build_proceed_hint(status, blocked=blocked)
+    if status.get("lfg_deferred"):
+        _apply_lfg_agent_briefing(status)
+        _mirror_preflight_watch_summary_from_status(status, summary)
+    else:
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            summary["active_runs"] = active_runs
+        gh_watch = _build_gh_watch_from_status(status)
+        if gh_watch:
+            summary["gh_watch_summary"] = gh_watch
+        queue_context = _build_defer_queue_context(status)
+        if queue_context.get("max_queued_hours") is not None or queue_context.get(
+            "queue_backlog"
+        ):
+            summary["queue_context"] = queue_context
+        _mirror_queue_context_fields(
+            summary,
+            summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None,
+        )
+        _mirror_queue_backlog_note(
+            summary,
+            summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None,
+        )
     status["preflight_watch_summary"] = summary
+    label = _watch_label_display(watch_label)
     print(
-        f"Preflight watch summary: {_format_preflight_watch_summary_line(summary)}",
+        f"LFG {label} summary: {_format_preflight_watch_summary_line(summary, watch_label=watch_label)}",
         file=sys.stderr,
     )
+    next_hint = summary.get("next_hint")
+    if isinstance(next_hint, str) and next_hint:
+        print(f"LFG {label} next: {next_hint}", file=sys.stderr)
     return status
 
 
@@ -2092,6 +2730,15 @@ def _compute_lfg_exit_reason(
     return "unknown"
 
 
+def _should_attach_lfg_mirror_stderr(status: dict[str, Any]) -> bool:
+    if isinstance(status.get("lfg_agent_briefing"), dict):
+        return True
+    flat_values = status.get("lfg_flat_field_values")
+    if isinstance(flat_values, dict) and flat_values:
+        return True
+    return _lfg_flat_field_stderr_count(status) > 0
+
+
 def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None:
     reason = status.get("lfg_exit_reason")
     if reason is None:
@@ -2104,6 +2751,10 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     crosscheck_note = status.get("pr_checks_crosscheck_note")
     if crosscheck_note:
         line = f"{line} crosscheck={crosscheck_note}"
+    if _should_attach_lfg_mirror_stderr(status):
+        suffix = " ".join(_lfg_briefing_mirror_stderr_parts(status))
+        if suffix:
+            line = f"{line} {suffix}"
     print(line, file=sys.stderr)
 
 
@@ -2121,17 +2772,231 @@ def _attach_active_run_refs(status: dict[str, Any], briefing: dict[str, Any]) ->
         briefing[f"{prefix}_status"] = _run_display_label(run)
 
 
+def _build_active_runs_list(status: dict[str, Any]) -> list[str]:
+    active_runs: list[str] = []
+    for key, label in (("verify_pypi", "verify"), ("forward_commits", "fc")):
+        run = status.get(key)
+        if isinstance(run, dict) and "error" not in run and _is_active_run(run):
+            active_runs.append(label)
+    return active_runs
+
+
+def _build_gh_watch_from_status(status: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key, label in (("verify_pypi", "verify"), ("forward_commits", "fc")):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run or not _is_active_run(run):
+            continue
+        run_id = run.get("run_id")
+        if run_id is not None:
+            parts.append(f"{label}:{run_id}")
+    return ",".join(parts)
+
+
+def _build_ci_drift_detail(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
+    doc_validation = (
+        status.get("doc_validation") if isinstance(status.get("doc_validation"), dict) else {}
+    )
+    active_runs = _build_active_runs_list(status)
+    return {
+        "fields": list(doc_validation.get("drift") or []),
+        "status_drift": list(doc_validation.get("status_drift") or []),
+        "ci_drift_note": checkpoint.get("ci_drift_note"),
+        "active_runs": active_runs,
+        "wait_recommended": bool(active_runs),
+    }
+
+
+def _build_drift_refresh_commands(status: dict[str, Any]) -> dict[str, str]:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    commands: dict[str, str] = {
+        "refresh_dry_run": f"{script} --lfg-refresh --dry-run",
+        "preflight_retry": f"{script} --lfg-preflight --json",
+        "preflight_watch": f"{script} --lfg-preflight-watch --json",
+        "gate_watch": f"{script} --lfg-gate-watch --json",
+    }
+    verify = status.get("verify_pypi")
+    forward_commits = status.get("forward_commits")
+    verify_terminal = isinstance(verify, dict) and "error" not in verify and not _is_active_run(verify)
+    fc_terminal = (
+        isinstance(forward_commits, dict)
+        and "error" not in forward_commits
+        and not _is_active_run(forward_commits)
+    )
+    if verify_terminal and fc_terminal:
+        commands["closeout"] = f"{script} --lfg-closeout"
+    return commands
+
+
+def _build_drift_expected_after(
+    refresh_commands: dict[str, str],
+) -> dict[str, str] | None:
+    for key in ("closeout", "refresh_dry_run", "gate", "preflight"):
+        command = refresh_commands.get(key)
+        if isinstance(command, str) and command:
+            return {"action": key, "command": command}
+    return None
+
+
+def _defer_preflight_watch_recommended(status: dict[str, Any]) -> bool:
+    defer_reason = status.get("lfg_defer_reason")
+    if not isinstance(defer_reason, str) or not defer_reason:
+        defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
+    return defer_reason in {
+        "fc_active_pending",
+        "fc_active_closeout",
+        "verify_active_closeout",
+        "unchanged_active_runs",
+    }
+
+
+def _build_defer_sha_gap_detail(status: dict[str, Any]) -> dict[str, Any] | None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict):
+        return None
+    if not checkpoint.get("fc_sha_stale") and not checkpoint.get("fc_stale_gap_pending_note"):
+        return None
+    forward_commits = status.get("forward_commits")
+    fc = forward_commits if isinstance(forward_commits, dict) else {}
+    master_sha = checkpoint.get("master_sha")
+    fc_head_sha = fc.get("head_sha")
+    detail: dict[str, Any] = {
+        "fc_sha_stale": bool(checkpoint.get("fc_sha_stale")),
+        "master_sha": master_sha,
+        "fc_head_sha": fc_head_sha,
+    }
+    queued_hours = fc.get("queued_hours")
+    if isinstance(queued_hours, (int, float)):
+        detail["queued_hours"] = round(float(queued_hours), 2)
+    if isinstance(master_sha, str) and isinstance(fc_head_sha, str):
+        detail["short"] = f"{fc_head_sha[:7]}:{master_sha[:7]}"
+    return detail
+
+
+def _build_defer_queue_context(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
+    max_queued: float | None = None
+    for key in ("forward_commits", "verify_pypi"):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run:
+            continue
+        queued_hours = run.get("queued_hours")
+        if isinstance(queued_hours, (int, float)):
+            value = float(queued_hours)
+            if max_queued is None or value > max_queued:
+                max_queued = value
+    queue_backlog = max_queued is not None and max_queued >= _QUEUE_BACKLOG_HOURS
+    queue_backlog_warning = (
+        max_queued is not None
+        and max_queued >= _QUEUE_WARN_HOURS
+        and not queue_backlog
+    )
+    note = checkpoint.get("queue_backlog_note")
+    context: dict[str, Any] = {
+        "queue_backlog": queue_backlog,
+        "queue_backlog_severe": queue_backlog,
+        "queue_backlog_warning": queue_backlog_warning,
+    }
+    if max_queued is not None:
+        context["max_queued_hours"] = round(max_queued, 2)
+    if isinstance(note, str) and note:
+        context["note"] = note
+    return context
+
+
+def _mirror_queue_backlog_note(
+    target: dict[str, Any],
+    queue_context: dict[str, Any] | None,
+) -> None:
+    if isinstance(queue_context, dict):
+        note = queue_context.get("note")
+        if isinstance(note, str) and note:
+            target["queue_backlog_note"] = note
+            return
+    target.pop("queue_backlog_note", None)
+
+
+def _format_briefing_command_stderr(command: str) -> str:
+    if len(command) <= 96:
+        return command
+    return f"{command[:93]}..."
+
+
+def _format_queue_backlog_note_stderr(note: str) -> str:
+    if len(note) <= 96:
+        return note
+    return f"{note[:93]}..."
+
+
+def _format_run_url_stderr(url: str) -> str:
+    if len(url) <= 96:
+        return url
+    return f"{url[:93]}..."
+
+
+def _mirror_queue_context_fields(
+    target: dict[str, Any],
+    queue_context: dict[str, Any] | None,
+) -> None:
+    keys = (
+        "queue_backlog",
+        "queue_backlog_severe",
+        "queue_backlog_warning",
+        "max_queued_hours",
+    )
+    if not isinstance(queue_context, dict) or not queue_context:
+        for key in keys:
+            target.pop(key, None)
+        return
+    for key in keys:
+        if key in queue_context:
+            target[key] = queue_context[key]
+        else:
+            target.pop(key, None)
+
+
+def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str]:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    commands: dict[str, str] = {
+        "preflight": f"{script} --lfg-preflight --json",
+        "gate": f"{script} --lfg-gate",
+    }
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("fc_sha_stale"):
+        commands["prefetch_gate"] = (
+            f"{script} --prefetch-git --lfg-gate  # after FC terminal; classify SHA gap"
+        )
+    defer_reason = status.get("lfg_defer_reason")
+    if not isinstance(defer_reason, str) or not defer_reason:
+        defer_reason = _resolve_lfg_defer_reason(
+            status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else None
+        )
+    if defer_reason in {
+        "unchanged_active_runs",
+        "fc_active_closeout",
+        "verify_active_closeout",
+    }:
+        commands["closeout"] = f"{script} --lfg-closeout"
+    return commands
+
+
+def _build_defer_expected_after_terminal(
+    post_terminal_commands: dict[str, str],
+) -> dict[str, str] | None:
+    for key in ("prefetch_gate", "closeout", "gate", "preflight"):
+        command = post_terminal_commands.get(key)
+        if isinstance(command, str) and command:
+            return {"action": key, "command": command}
+    return None
+
+
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
-    command = briefing.get("command")
-    preflight_retry = (
-        str(command)
-        if isinstance(command, str) and command
-        else f"{script} --lfg-preflight --json"
-    )
     commands: dict[str, str] = {
-        "preflight_retry": preflight_retry,
+        "preflight_retry": f"{script} --lfg-preflight --json",
         "preflight_watch": f"{script} --lfg-preflight-watch --json",
+        "gate_watch": f"{script} --lfg-gate-watch --json",
     }
     fc_run_id = briefing.get("fc_run_id")
     if fc_run_id is not None:
@@ -2140,6 +3005,23 @@ def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     if verify_run_id is not None:
         commands["watch_verify_run"] = f"gh run watch {verify_run_id} --exit-status"
     return commands
+
+
+def _format_gh_watch_summary(briefing: dict[str, Any]) -> str:
+    monitor_commands = briefing.get("monitor_commands")
+    if not isinstance(monitor_commands, dict):
+        return ""
+    parts: list[str] = []
+    for label, cmd_key, id_key in (
+        ("verify", "watch_verify_run", "verify_run_id"),
+        ("fc", "watch_fc_run", "fc_run_id"),
+    ):
+        if cmd_key not in monitor_commands:
+            continue
+        run_id = briefing.get(id_key)
+        if run_id is not None:
+            parts.append(f"{label}:{run_id}")
+    return ",".join(parts)
 
 
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
@@ -2220,6 +3102,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "fc_stale_gap_pending_note",
             "fc_active_closeout_note",
             "verify_active_closeout_note",
+            "queue_backlog_note",
         ):
             note = checkpoint.get(key)
             if isinstance(note, str) and note:
@@ -2235,6 +3118,22 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
         _attach_active_run_refs(status, briefing)
         briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+        briefing["post_terminal_commands"] = _build_defer_post_terminal_commands(status)
+        expected_after = _build_defer_expected_after_terminal(briefing["post_terminal_commands"])
+        if expected_after is not None:
+            briefing["expected_after_terminal"] = expected_after
+        sha_gap = _build_defer_sha_gap_detail(status)
+        if sha_gap is not None:
+            briefing["sha_gap"] = sha_gap
+        queue_context = _build_defer_queue_context(status)
+        briefing["queue_context"] = queue_context
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            briefing["active_runs"] = active_runs
+        if _defer_preflight_watch_recommended(status):
+            briefing["watch_recommended"] = True
+            briefing["primary_action"] = "gate_watch"
+            briefing["command"] = _primary_watch_command(briefing["monitor_commands"])
         return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
     if blocked_refresh:
@@ -2248,44 +3147,390 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
     proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
     if proceed_reason == "investigate_ci_drift":
-        return {
+        drift = _build_ci_drift_detail(status)
+        refresh_commands = _build_drift_refresh_commands(status)
+        command = proceed_hint
+        if drift.get("wait_recommended"):
+            command = _primary_watch_command(refresh_commands)
+        briefing = {
             "action": "investigate_ci_drift",
-            "command": proceed_hint,
+            "command": command,
             "reason": "investigate_ci_drift",
             "notes": extra_notes,
             "merge_ready": False,
             "blocked": None,
+            "drift": drift,
+            "refresh_commands": refresh_commands,
+            "wait_recommended": bool(drift.get("wait_recommended")),
         }
+        expected_after = _build_drift_expected_after(refresh_commands)
+        if expected_after is not None:
+            briefing["expected_after_terminal"] = expected_after
+        _attach_active_run_refs(status, briefing)
+        if drift.get("wait_recommended"):
+            briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+            briefing["primary_action"] = "gate_watch"
+            briefing["queue_context"] = _build_defer_queue_context(status)
+            active_runs = _build_active_runs_list(status)
+            if active_runs:
+                briefing["active_runs"] = active_runs
+        return briefing
     return {}
+
+
+def _mirror_briefing_sha_gap(
+    target: dict[str, Any],
+    briefing: dict[str, Any],
+) -> None:
+    sha_gap = briefing.get("sha_gap")
+    if isinstance(sha_gap, dict) and sha_gap:
+        target["sha_gap"] = sha_gap
+        short = sha_gap.get("short")
+        if isinstance(short, str) and short:
+            target["sha_gap_short"] = short
+        else:
+            target.pop("sha_gap_short", None)
+    else:
+        target.pop("sha_gap", None)
+        target.pop("sha_gap_short", None)
+
+
+def _format_briefing_sha_gap_short(briefing: dict[str, Any]) -> str | None:
+    sha_gap = briefing.get("sha_gap")
+    if isinstance(sha_gap, dict):
+        short = sha_gap.get("short")
+        if isinstance(short, str) and short:
+            return short
+    return None
+
+
+def _mirror_briefing_merge_ready(
+    target: dict[str, Any],
+    briefing: dict[str, Any],
+) -> None:
+    if "merge_ready" in briefing:
+        target["briefing_merge_ready"] = bool(briefing["merge_ready"])
+    else:
+        target.pop("briefing_merge_ready", None)
+
+
+def _format_briefing_merge_ready(briefing: dict[str, Any]) -> str | None:
+    if "merge_ready" not in briefing:
+        return None
+    return "true" if briefing["merge_ready"] else "false"
+
+
+def _mirror_briefing_notes(
+    target: dict[str, Any],
+    briefing: dict[str, Any],
+) -> None:
+    notes = briefing.get("notes")
+    if isinstance(notes, list) and notes:
+        target["briefing_notes"] = list(notes)
+    else:
+        target.pop("briefing_notes", None)
+
+
+def _mirror_lfg_flat_fields(
+    source: dict[str, Any],
+    target: dict[str, Any],
+    *,
+    clear_missing: bool = False,
+    queue_context_filter: bool = False,
+) -> None:
+    active_runs = source.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        target["active_runs"] = list(active_runs)
+    elif clear_missing:
+        target.pop("active_runs", None)
+
+    gh_watch = source.get("gh_watch_summary")
+    if isinstance(gh_watch, str) and gh_watch:
+        target["gh_watch_summary"] = gh_watch
+    elif clear_missing:
+        target.pop("gh_watch_summary", None)
+
+    queue_context = source.get("queue_context")
+    queue_context_present = isinstance(queue_context, dict) and queue_context
+    if queue_context_present:
+        if not queue_context_filter or (
+            queue_context.get("max_queued_hours") is not None
+            or queue_context.get("queue_backlog")
+        ):
+            target["queue_context"] = queue_context
+        elif clear_missing:
+            target.pop("queue_context", None)
+            queue_context = None
+    elif clear_missing:
+        target.pop("queue_context", None)
+    _mirror_queue_context_fields(
+        target,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+    _mirror_queue_backlog_note(
+        target,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+
+    expected_after = source.get("expected_after_terminal")
+    if isinstance(expected_after, dict) and expected_after:
+        target["expected_after_terminal"] = expected_after
+    elif clear_missing:
+        target.pop("expected_after_terminal", None)
+
+    primary_action = source.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        target["primary_action"] = primary_action
+    elif clear_missing:
+        target.pop("primary_action", None)
+
+    watch_recommended = source.get("watch_recommended")
+    if watch_recommended:
+        target["watch_recommended"] = True
+    elif clear_missing:
+        target.pop("watch_recommended", None)
+
+    post_terminal = source.get("post_terminal_commands")
+    if isinstance(post_terminal, dict) and post_terminal:
+        target["post_terminal_commands"] = post_terminal
+    elif clear_missing:
+        target.pop("post_terminal_commands", None)
+
+    command = source.get("briefing_command") or source.get("wait_command") or source.get("command")
+    if isinstance(command, str) and command:
+        target["wait_command"] = command
+        target["briefing_command"] = command
+    elif clear_missing:
+        target.pop("wait_command", None)
+        target.pop("briefing_command", None)
+
+    monitor_commands = source.get("monitor_commands")
+    if isinstance(monitor_commands, dict) and monitor_commands:
+        target["monitor_commands"] = monitor_commands
+    elif clear_missing:
+        target.pop("monitor_commands", None)
+
+    for field in _LFG_RUN_REF_FIELDS:
+        value = source.get(field)
+        if value is not None:
+            target[field] = value
+        elif clear_missing:
+            target.pop(field, None)
+
+    blocked = source.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        target["blocked"] = blocked
+    elif clear_missing:
+        target.pop("blocked", None)
+
+    action = source.get("briefing_action")
+    if not isinstance(action, str) or not action:
+        action = source.get("action")
+    if isinstance(action, str) and action:
+        target["briefing_action"] = action
+    elif clear_missing:
+        target.pop("briefing_action", None)
+
+    reason = source.get("briefing_reason")
+    if not isinstance(reason, str) or not reason:
+        reason = source.get("reason")
+    if isinstance(reason, str) and reason:
+        target["briefing_reason"] = reason
+    elif clear_missing:
+        target.pop("briefing_reason", None)
+
+    if clear_missing:
+        _mirror_briefing_notes(target, source)
+        _mirror_briefing_merge_ready(target, source)
+        _mirror_briefing_sha_gap(target, source)
+    else:
+        notes = source.get("briefing_notes")
+        if not isinstance(notes, list) or not notes:
+            notes = source.get("notes")
+        if isinstance(notes, list) and notes:
+            target["briefing_notes"] = list(notes)
+        if "briefing_merge_ready" in source:
+            target["briefing_merge_ready"] = source["briefing_merge_ready"]
+        elif "merge_ready" in source:
+            target["briefing_merge_ready"] = bool(source["merge_ready"])
+        sha_gap = source.get("sha_gap")
+        if isinstance(sha_gap, dict) and sha_gap:
+            target["sha_gap"] = sha_gap
+            short = sha_gap.get("short")
+            if isinstance(short, str) and short:
+                target["sha_gap_short"] = short
+        sha_gap_short = source.get("sha_gap_short")
+        if isinstance(sha_gap_short, str) and sha_gap_short:
+            target["sha_gap_short"] = sha_gap_short
+
+    gh_watch_command = source.get("gh_watch_command")
+    if not isinstance(gh_watch_command, str) or not gh_watch_command:
+        gh_watch_command = _extract_gh_watch_command(source)
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        target["gh_watch_command"] = gh_watch_command
+    elif clear_missing:
+        target.pop("gh_watch_command", None)
+
+    wait_recommended = source.get("wait_recommended")
+    if wait_recommended:
+        target["wait_recommended"] = True
+    elif clear_missing:
+        target.pop("wait_recommended", None)
+
+    ci_drift = source.get("ci_drift")
+    if not isinstance(ci_drift, dict) or not ci_drift:
+        ci_drift = source.get("drift")
+    if isinstance(ci_drift, dict) and ci_drift:
+        target["ci_drift"] = ci_drift
+    elif clear_missing:
+        target.pop("ci_drift", None)
+
+
+def _format_briefing_notes_count(briefing: dict[str, Any]) -> str | None:
+    notes = briefing.get("notes")
+    if isinstance(notes, list) and notes:
+        return str(len(notes))
+    return None
+
+
+def _attach_gh_watch_summary(briefing: dict[str, Any]) -> None:
+    gh_watch = _format_gh_watch_summary(briefing)
+    if gh_watch:
+        briefing["gh_watch_summary"] = gh_watch
+
+
+def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
+    values: dict[str, Any] = {}
+    for key in LFG_FLAT_FIELD_KEYS:
+        if key not in source:
+            continue
+        value = source[key]
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            values[key] = value
+            continue
+        if isinstance(value, str) and not value:
+            continue
+        if isinstance(value, (list, dict)) and not value:
+            continue
+        values[key] = value
+    return values
+
+
+def _build_lfg_flat_field_keys_present(flat_values: dict[str, Any]) -> list[str]:
+    return [key for key in LFG_FLAT_FIELD_KEYS if key in flat_values]
+
+
+def _mirror_preflight_watch_summary_from_status(
+    status: dict[str, Any],
+    summary: dict[str, Any],
+) -> None:
+    _mirror_lfg_flat_fields(
+        status,
+        summary,
+        clear_missing=False,
+        queue_context_filter=True,
+    )
+    flat_keys = status.get("lfg_flat_field_keys")
+    if isinstance(flat_keys, list) and flat_keys:
+        summary["lfg_flat_field_keys"] = list(flat_keys)
+    flat_values = _build_lfg_flat_field_values(summary)
+    if flat_values:
+        summary["lfg_flat_field_values"] = flat_values
+        summary["lfg_flat_field_keys_present"] = _build_lfg_flat_field_keys_present(
+            flat_values
+        )
+
+
+def _lfg_flat_field_keys_present_stderr(source: dict[str, Any]) -> list[str]:
+    present = source.get("lfg_flat_field_keys_present")
+    if isinstance(present, list) and present:
+        return [str(key) for key in present if isinstance(key, str) and key]
+    flat_values = source.get("lfg_flat_field_values")
+    if isinstance(flat_values, dict) and flat_values:
+        return _build_lfg_flat_field_keys_present(flat_values)
+    return _build_lfg_flat_field_keys_present(_build_lfg_flat_field_values(source))
+
+
+def _lfg_flat_field_stderr_count(source: dict[str, Any]) -> int:
+    flat_values = source.get("lfg_flat_field_values")
+    if isinstance(flat_values, dict):
+        return len(flat_values)
+    return len(_build_lfg_flat_field_values(source))
+
+
+def _lfg_flat_field_mirror_stderr_parts(source: dict[str, Any]) -> list[str]:
+    parts: list[str] = []
+    flat_count = _lfg_flat_field_stderr_count(source)
+    if flat_count:
+        parts.append(f"flat_fields={flat_count}")
+    flat_keys = _lfg_flat_field_keys_present_stderr(source)
+    if flat_keys:
+        parts.append(f"flat_keys={','.join(flat_keys)}")
+    return parts
 
 
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
     briefing = _build_lfg_agent_briefing(status)
     if briefing:
+        _attach_gh_watch_summary(briefing)
         status["lfg_agent_briefing"] = briefing
+        _mirror_lfg_flat_fields(briefing, status, clear_missing=True)
+        status["lfg_flat_field_keys"] = list(LFG_FLAT_FIELD_KEYS)
+        flat_values = _build_lfg_flat_field_values(status)
+        if flat_values:
+            status["lfg_flat_field_values"] = flat_values
+            status["lfg_flat_field_keys_present"] = _build_lfg_flat_field_keys_present(
+                flat_values
+            )
+        else:
+            status.pop("lfg_flat_field_values", None)
+            status.pop("lfg_flat_field_keys_present", None)
     else:
         status.pop("lfg_agent_briefing", None)
+        status.pop("lfg_flat_field_keys", None)
+        status.pop("lfg_flat_field_values", None)
+        status.pop("lfg_flat_field_keys_present", None)
+        _mirror_lfg_flat_fields({}, status, clear_missing=True)
 
 
-def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
-    action = briefing.get("action") or "unknown"
+def _lfg_briefing_drift_field_names(status: dict[str, Any]) -> list[str]:
+    ci_drift = status.get("ci_drift")
+    if isinstance(ci_drift, dict):
+        drift = ci_drift
+    else:
+        briefing = _lfg_briefing_fallback(status)
+        drift = briefing.get("drift")
+    if not isinstance(drift, dict):
+        return []
+    fields = drift.get("fields") or []
+    return [
+        str(entry.get("field"))
+        for entry in fields
+        if isinstance(entry, dict) and entry.get("field")
+    ]
+
+
+def _emit_lfg_agent_briefing_stderr(status: dict[str, Any]) -> None:
+    briefing = _lfg_briefing_fallback(status)
+    action = status.get("briefing_action") or briefing.get("action") or "unknown"
     parts = [f"action={action}"]
-    if action == "defer" and briefing.get("reason"):
-        parts.append(f"reason={briefing['reason']}")
+    if action == "defer":
+        reason = (
+            status.get("briefing_reason")
+            or status.get("lfg_defer_reason")
+            or briefing.get("reason")
+        )
+        if isinstance(reason, str) and reason:
+            parts.append(f"reason={reason}")
+    skip_prefixes = {"action=", "briefing_reason="}
+    for part in _lfg_briefing_mirror_stderr_parts(status):
+        if any(part.startswith(prefix) for prefix in skip_prefixes):
+            continue
+        parts.append(part)
     if "exit_code" in briefing:
         parts.append(f"exit={briefing['exit_code']}")
-    if briefing.get("blocked"):
-        parts.append(f"blocked={briefing['blocked']}")
-    fc_run_id = briefing.get("fc_run_id")
-    if fc_run_id is not None:
-        parts.append(f"fc_run={fc_run_id}")
-    monitor_commands = briefing.get("monitor_commands")
-    if isinstance(monitor_commands, dict):
-        watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
-            "watch_verify_run"
-        )
-        if isinstance(watch_cmd, str) and watch_cmd:
-            parts.append(f"watch={watch_cmd}")
     percent = briefing.get("completion_percent")
     if isinstance(percent, int):
         parts.append(f"complete={percent}%")
@@ -2717,10 +3962,16 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
         defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
-        if defer_reason in {"fc_active_pending", "fc_active_closeout"}:
-            return f"{script} --lfg-preflight  # re-check when FC run reaches terminal"
-        if defer_reason == "verify_active_closeout":
-            return f"{script} --lfg-preflight  # re-check when verify run reaches terminal"
+        if defer_reason in {
+            "fc_active_pending",
+            "fc_active_closeout",
+            "verify_active_closeout",
+            "unchanged_active_runs",
+        }:
+            return (
+                f"{script} --lfg-gate-watch --json  "
+                "# poll until active runs reach terminal"
+            )
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"
@@ -2738,6 +3989,12 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     if proceed_reason == "monitoring_complete":
         return f"{script} --lfg-gate  # monitoring docs synced; track complete"
     if proceed_reason == "investigate_ci_drift":
+        drift = _build_ci_drift_detail(status)
+        if drift.get("wait_recommended"):
+            return (
+                f"{script} --lfg-gate-watch --json  "
+                "# wait for active runs before refresh dry-run"
+            )
         return f"{script} --lfg-refresh --dry-run"
     if proceed_reason in _DISPATCH_PROCEED_REASONS:
         return f"{script} --lfg-refresh"
@@ -2752,6 +4009,7 @@ def _resolve_lfg_mode(
     lfg_merge_gate: bool,
     lfg_closeout: bool,
     lfg_gate: bool,
+    lfg_gate_watch: bool,
     lfg_preflight: bool,
     lfg_preflight_watch: bool,
     lfg_refresh: bool,
@@ -2760,6 +4018,8 @@ def _resolve_lfg_mode(
 ) -> str | None:
     if lfg_merge_watch or (lfg_merge_gate and lfg_pr_watch):
         return "merge_watch"
+    if lfg_gate_watch or (lfg_gate and lfg_preflight_watch):
+        return "gate_watch"
     if lfg_preflight_watch:
         return "preflight_watch"
     if lfg_pr_watch:
@@ -2807,6 +4067,7 @@ def main() -> None:
             "Examples:\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-watch\n"
@@ -2939,6 +4200,11 @@ def main() -> None:
         help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
     )
     parser.add_argument(
+        "--lfg-gate-watch",
+        action="store_true",
+        help="Shorthand for --lfg-gate --lfg-preflight-watch (poll until defer clears then gate exit)",
+    )
+    parser.add_argument(
         "--lfg-merge-watch",
         action="store_true",
         help="Shorthand for --lfg-merge-gate --lfg-pr-watch (poll until PR CI ready/failed/timeout)",
@@ -3014,6 +4280,10 @@ def main() -> None:
     if args.lfg_merge_watch:
         args.lfg_merge_gate = True
         args.lfg_pr_watch = True
+
+    if args.lfg_gate_watch:
+        args.lfg_gate = True
+        args.lfg_preflight_watch = True
 
     if args.lfg_preflight_watch:
         args.lfg_preflight = True
@@ -3147,11 +4417,14 @@ def main() -> None:
         if args.prefetch_git and args.compare_checkpoint and not args.lfg_preflight_watch:
             prefetch_result = _git_prefetch_origin_master()
         if args.lfg_preflight_watch:
+            watch_label = "gate" if args.lfg_gate_watch else "preflight"
             status = _watch_lfg_preflight_defer(
                 targets=targets,
                 prefetch_git=args.prefetch_git,
                 interval_sec=max(0.0, args.watch_interval),
                 timeout_sec=max(0.0, args.watch_timeout),
+                watch_label=watch_label,
+                flat_keys_heartbeat_polls=max(0, args.watch_heartbeat_polls),
             )
             deferred = bool(status.get("lfg_deferred"))
             if deferred:
@@ -3216,6 +4489,7 @@ def main() -> None:
                         lfg_merge_gate=args.lfg_merge_gate,
                         lfg_closeout=args.lfg_closeout,
                         lfg_gate=args.lfg_gate,
+                        lfg_gate_watch=args.lfg_gate_watch,
                         lfg_preflight=args.lfg_preflight,
                         lfg_preflight_watch=args.lfg_preflight_watch,
                         lfg_refresh=args.lfg_refresh,
@@ -3230,7 +4504,7 @@ def main() -> None:
                         briefing,
                         2,
                     ):
-                        _emit_lfg_agent_briefing_stderr(briefing)
+                        _emit_lfg_agent_briefing_stderr(status)
                     _print_ci_status(status, as_json=args.json)
                     if not status["gh_ok"]:
                         sys.exit(1)
@@ -3268,6 +4542,7 @@ def main() -> None:
             lfg_merge_gate=args.lfg_merge_gate,
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
+            lfg_gate_watch=args.lfg_gate_watch,
             lfg_preflight=args.lfg_preflight,
             lfg_preflight_watch=args.lfg_preflight_watch,
             lfg_refresh=args.lfg_refresh,
@@ -3378,7 +4653,7 @@ def main() -> None:
                 briefing,
                 exit_code,
             ):
-                _emit_lfg_agent_briefing_stderr(briefing)
+                _emit_lfg_agent_briefing_stderr(status)
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)

@@ -93,11 +93,12 @@ version = "2.3.12"
 # corresponding pykotor extra; the actual dependency specifiers live in the
 # PyKotor sub-project so we never drift from its pinning logic.
 [project.optional-dependencies]
-all = ["pykotor[encodings,exp,extra,font,gl,updater,render]>=2.3.12"]
+all = ["pykotor[encodings,exp,extra,font,textures,gl,updater,render]>=2.3.12"]
 encodings = ["pykotor[encodings]>=2.3.12"]
 exp = ["pykotor[exp]>=2.3.12"]
 extra = ["pykotor[extra]>=2.3.12"]
 font = ["pykotor[font]>=2.3.12"]
+textures = ["pykotor[textures]>=2.3.12"]
 gl = ["pykotor[gl]>=2.3.12"]
 gl_exp = ["pykotor[gl_exp]>=2.3.12"]
 updater = ["pykotor[updater]>=2.3.12"]
