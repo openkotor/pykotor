@@ -10,11 +10,17 @@ import os
 import pathlib
 import sys
 
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.bwm import BWM, read_bwm, write_bwm, write_bwm_ascii
 from pykotor.resource.formats.bwm.bwm_data import BWMType
 from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import ndix_compressor_available
+from pykotor.tools.texture_batch import (
+    TextureFormat,
+    batch_convert_textures,
+    iter_texture_paths,
+)
 from pykotor.tools.resources import (
     convert_ascii_to_bwm,
     convert_ascii_to_mdl,
@@ -27,17 +33,83 @@ from pykotor.tools.resources import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from argparse import Namespace
 
     from loggerplus import RobustLogger as Logger
 
 
+@contextmanager
+def _texture_compressor_env(use_ndix: bool) -> Iterator[None]:
+    prev_ndix = os.environ.get("PYKOTOR_DXT_COMPRESSOR")
+    if use_ndix:
+        os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
+    try:
+        yield
+    finally:
+        if use_ndix:
+            if prev_ndix is None:
+                os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
+            else:
+                os.environ["PYKOTOR_DXT_COMPRESSOR"] = prev_ndix
+
+
+def _texture_source_formats(args: Namespace) -> set[TextureFormat] | None:
+    values = getattr(args, "from_format", None)
+    if values:
+        return {value.lower() for value in values}
+    to_format = getattr(args, "to", None)
+    if to_format:
+        return {"tpc", "tga", "png"} - {to_format.lower()}
+    return None
+
+
+def _texture_targets(
+    args: Namespace, source_formats: set[TextureFormat] | None
+) -> list[pathlib.Path]:
+    targets: list[pathlib.Path] = []
+    for item in args.input:
+        targets.extend(
+            iter_texture_paths(
+                item,
+                recursive=bool(getattr(args, "recursive", False)),
+                source_formats=source_formats,
+            )
+        )
+    return targets
+
+
 def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
-    """Convert texture files (TPC<->TGA)."""
-    input_path = pathlib.Path(args.input)
+    """Convert texture files (TPC/TGA/PNG)."""
+    inputs = [pathlib.Path(value) for value in args.input]
+    source_formats = _texture_source_formats(args)
+    targets = _texture_targets(args, source_formats)
+    output_path = pathlib.Path(args.output) if args.output else None
+    to_format = args.to.lower() if getattr(args, "to", None) else None
 
     try:
-        if input_path.suffix.lower() == ".tpc":
+        if not targets:
+            logger.error("No supported texture files found (expected .tpc, .tga, or .png).")
+            return 1
+        if output_path and output_path.suffix and len(targets) > 1:
+            logger.error("--output must be a directory when converting multiple texture files.")
+            return 1
+        if getattr(args, "txi", None) and len(targets) != 1:
+            logger.error("--txi can only be used with one input texture.")
+            return 1
+        if getattr(args, "ndix_dxt", False) and not ndix_compressor_available():
+            logger.error(
+                "--ndix-dxt requires Node.js on PATH and vendored ndix_compress_cli.cjs "
+                "(see Libraries/PyKotor/.../vendor_ndix_compressonator/).",
+            )
+            return 1
+
+        input_path = targets[0]
+        if (
+            getattr(args, "txi", None)
+            and input_path.suffix.lower() == ".tpc"
+            and to_format in (None, "tga")
+        ):
             # TPC to TGA
             output_path = (
                 pathlib.Path(args.output) if args.output else input_path.with_suffix(".tga")
@@ -45,37 +117,55 @@ def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
             txi_output = pathlib.Path(args.txi) if args.txi else None
             convert_tpc_to_tga(input_path, output_path, txi_output_path=txi_output)
             logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
-        else:
+            return 0
+
+        if (
+            getattr(args, "txi", None)
+            and input_path.suffix.lower() == ".tga"
+            and to_format in (None, "tpc")
+        ):
             # TGA to TPC
             output_path = (
                 pathlib.Path(args.output) if args.output else input_path.with_suffix(".tpc")
             )
             txi_path = pathlib.Path(args.txi) if args.txi else None
-            if getattr(args, "ndix_dxt", False) and not ndix_compressor_available():
-                logger.error(
-                    "--ndix-dxt requires Node.js on PATH and vendored ndix_compress_cli.cjs "
-                    "(see Libraries/PyKotor/.../vendor_ndix_compressonator/).",
-                )
-                return 1
-            prev_ndix = os.environ.get("PYKOTOR_DXT_COMPRESSOR")
-            if getattr(args, "ndix_dxt", False):
-                os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
-            try:
+            with _texture_compressor_env(bool(getattr(args, "ndix_dxt", False))):
                 convert_tga_to_tpc(
                     input_path,
                     output_path,
                     txi_input_path=txi_path,
                     target_format=None,  # Auto-detect format
                 )
-            finally:
-                if getattr(args, "ndix_dxt", False):
-                    if prev_ndix is None:
-                        os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
-                    else:
-                        os.environ["PYKOTOR_DXT_COMPRESSOR"] = prev_ndix
             logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
+            return 0
+
+        if getattr(args, "txi", None):
+            logger.error("--txi is only supported for TPC↔TGA single-file conversions.")
+            return 1
+
+        with _texture_compressor_env(bool(getattr(args, "ndix_dxt", False))):
+            outcome = batch_convert_textures(
+                [os.fspath(path) for path in inputs],
+                output=os.fspath(output_path) if output_path else None,
+                to_format=to_format,
+                recursive=bool(getattr(args, "recursive", False)),
+                overwrite=bool(getattr(args, "overwrite", False)),
+                source_formats=source_formats,
+            )
+        for error in outcome.errors:
+            logger.error(error)
+        for output in outcome.outputs:
+            logger.info("Converted texture: %s", output)
+        if outcome.skipped_count:
+            logger.info(
+                "Skipped %s existing texture output(s). Use --overwrite to replace them.",
+                outcome.skipped_count,
+            )
+        if outcome.errors:
+            return 1
+        logger.info("Converted %s texture(s).", outcome.success_count)
     except Exception:
-        logger.exception(f"Failed to convert texture {input_path}")  # noqa: G004
+        logger.exception("Failed to convert texture input(s).")
         return 1
     else:
         return 0

@@ -930,10 +930,41 @@ Extract files from Bioware archive formats including:
 
     # Resource tools
     texture_parser = subparsers.add_parser(
-        "texture-convert", help="Convert texture files (TPC<->TGA)"
+        "texture-convert", help="Convert texture files (TPC/TGA/PNG)"
     )
-    texture_parser.add_argument("input", help="Input texture file (TPC or TGA)")
-    texture_parser.add_argument("--output", "-o", dest="output", help="Output texture file")
+    texture_parser.add_argument(
+        "input",
+        nargs="+",
+        help="Input texture file(s) or directory/directories (.tpc, .tga, .png)",
+    )
+    texture_parser.add_argument(
+        "--output",
+        "-o",
+        dest="output",
+        help="Output file for one input, or output directory for multiple inputs",
+    )
+    texture_parser.add_argument(
+        "--to",
+        choices=["tpc", "tga", "png"],
+        help="Output format. Defaults: TPC->TGA, TGA->TPC, PNG->TGA",
+    )
+    texture_parser.add_argument(
+        "--from-format",
+        action="append",
+        choices=["tpc", "tga", "png"],
+        help="Only convert inputs with this format. Repeat to include multiple formats.",
+    )
+    texture_parser.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="Recurse into input directories",
+    )
+    texture_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace existing outputs during batch conversion",
+    )
     texture_parser.add_argument("--txi", help="TXI file path (for TPC<->TGA conversion)")
     texture_parser.add_argument("--format", help="TPC format type (for TGA->TPC)")
     texture_parser.add_argument(
@@ -1198,9 +1229,7 @@ Compare two paths and show differences. Supports any combination of:
         "check-txi", help="Check if TXI files exist for specific textures"
     )
     check_txi_path_group = check_txi_parser.add_mutually_exclusive_group(required=True)
-    check_txi_path_group.add_argument(
-        "--path", "-p", dest="path", help="Path to a game root"
-    )
+    check_txi_path_group.add_argument("--path", "-p", dest="path", help="Path to a game root")
     check_txi_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     check_txi_parser.add_argument(
         "--textures",
@@ -1340,11 +1369,15 @@ Compare two paths and show differences. Supports any combination of:
     validate_installation_parser = subparsers.add_parser(
         "validate-game-root", aliases=["validate-installation"], help="Validate a KotOR game root"
     )
-    validate_installation_path_group = validate_installation_parser.add_mutually_exclusive_group(required=True)
+    validate_installation_path_group = validate_installation_parser.add_mutually_exclusive_group(
+        required=True
+    )
     validate_installation_path_group.add_argument(
         "--path", "-p", dest="path", help="Path to a game root"
     )
-    validate_installation_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
+    validate_installation_path_group.add_argument(
+        "--installation", "-i", dest="path", help=SUPPRESS
+    )
     validate_installation_parser.add_argument(
         "--check-essential",
         action="store_true",
@@ -1358,7 +1391,9 @@ Compare two paths and show differences. Supports any combination of:
     investigate_module_parser.add_argument(
         "--module", "-m", required=True, help="Module name to investigate"
     )
-    investigate_module_path_group = investigate_module_parser.add_mutually_exclusive_group(required=True)
+    investigate_module_path_group = investigate_module_parser.add_mutually_exclusive_group(
+        required=True
+    )
     investigate_module_path_group.add_argument(
         "--path", "-p", dest="path", help="Path to a game root"
     )
@@ -1374,11 +1409,15 @@ Compare two paths and show differences. Supports any combination of:
     check_missing_resources_parser.add_argument(
         "--module", "-m", required=True, help="Module name to check"
     )
-    check_missing_resources_path_group = check_missing_resources_parser.add_mutually_exclusive_group(required=True)
+    check_missing_resources_path_group = (
+        check_missing_resources_parser.add_mutually_exclusive_group(required=True)
+    )
     check_missing_resources_path_group.add_argument(
         "--path", "-p", dest="path", help="Path to a game root"
     )
-    check_missing_resources_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
+    check_missing_resources_path_group.add_argument(
+        "--installation", "-i", dest="path", help=SUPPRESS
+    )
     check_missing_resources_parser.add_argument(
         "--textures", "-t", nargs="+", help="Texture names to check"
     )
@@ -1390,7 +1429,9 @@ Compare two paths and show differences. Supports any combination of:
         "module-resources", help="Get all resources referenced by a module's models"
     )
     module_resources_parser.add_argument("--module", "-m", required=True, help="Module name")
-    module_resources_path_group = module_resources_parser.add_mutually_exclusive_group(required=True)
+    module_resources_path_group = module_resources_parser.add_mutually_exclusive_group(
+        required=True
+    )
     module_resources_path_group.add_argument(
         "--path", "-p", dest="path", help="Path to a game root"
     )
@@ -1607,7 +1648,9 @@ Compare two paths and show differences. Supports any combination of:
     patch_installation_parser = subparsers.add_parser(
         "patch-game-root", aliases=["patch-installation"], help="Patch a KotOR game root"
     )
-    patch_installation_path_group = patch_installation_parser.add_mutually_exclusive_group(required=True)
+    patch_installation_path_group = patch_installation_parser.add_mutually_exclusive_group(
+        required=True
+    )
     patch_installation_path_group.add_argument(
         "--path", "-p", dest="path", help="Path to a game root"
     )

@@ -116,6 +116,8 @@ uvx --refresh holopatcher --help
 uvx --refresh pykotor --help
 # Example: convert 2DA to CSV
 uvx --refresh pykotor 2da2csv "path/to/file.2da"
+# Example: convert edited PNG textures back to TGA in a batch
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./edited_pngs --from-format png --to tga --output ./override --recursive
 ```
 
 **KotorDiff** - Compare and generate patches:

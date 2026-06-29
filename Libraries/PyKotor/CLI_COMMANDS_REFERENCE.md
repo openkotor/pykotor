@@ -1016,12 +1016,31 @@ Based on the comprehensive analysis above, PyKotorCLI should support:
 - `assemble` - Assemble NSS to NCS (built-in)
 - `nwnnsscomp` / `script-compile` - Unified nwnnsscomp.exe-compatible CLI: accepts all variant argument styles (V1, TSLPatcher, KOTOR Tool, KOTOR Scripting Tool); uses built-in compiler/decompiler or optional external exe with correct argv. Implementation and external invocation both rely on [compilers.py](Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py) (`KnownExternalCompilers`, `NwnnsscompConfig`).
 
-### Resource Tools (To Add)
+### Resource Tools
 
-- `texture-convert` - Convert textures (TPC↔TGA, etc.)
+- `texture-convert` - Convert textures (`.tpc`, `.tga`, `.png`) one file at a time or in batches.
 - `sound-convert` - Convert sounds (SSF↔WAV, etc.)
 - `model-convert` - Convert models (MDL↔ASCII)
 - `walkmesh-rebuild` / `wok-rebuild` - Rebuild BWM derived data (AABB, adjacency, perimeter edges) from geometry
+
+```bash
+# Convert edited PNGs back to TGAs for Override. PNG support requires pykotor[textures].
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./edited_pngs --from-format png --to tga --output ./Override --recursive
+
+# Convert source TGAs to PNGs for AI/image-editor work.
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./source_tgas --from-format tga --to png --output ./png_work --recursive
+
+# Convert explicit files in place. Defaults: TPC->TGA, TGA->TPC, PNG->TGA.
+pykotor texture-convert texture_a.png texture_b.png --overwrite
+```
+
+Useful options:
+
+- `--to {tpc,tga,png}` - Force one output format.
+- `--from-format {tpc,tga,png}` - Filter directory inputs; repeat for multiple source formats.
+- `--output PATH` - Output file for one input, or output directory for multiple inputs.
+- `--recursive` - Recurse into input directories and preserve relative paths under the output directory.
+- `--overwrite` - Replace existing outputs; otherwise existing batch outputs are skipped.
 
 ### Utility Commands (Implemented)
 

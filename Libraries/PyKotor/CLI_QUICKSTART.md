@@ -89,6 +89,22 @@ uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modd
 uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --incremental
 ```
 
+### 8. Batch texture conversion for AI edit workflows
+
+`texture-convert` accepts one or more files or directories and supports `.tpc`, `.tga`, and `.png`.
+PNG support uses Pillow; install the `textures` extra when running from PyPI.
+
+```bash
+# Convert final edited PNGs back to TGAs for Override
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./edited_pngs --from-format png --to tga --output ./Override --recursive
+
+# Convert exported TGAs to PNGs before editing
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert ./exported_tgas --from-format tga --to png --output ./png_work --recursive
+
+# Convert a few files in place, using defaults: TPC->TGA, TGA->TPC, PNG->TGA
+uvx --refresh --with "pykotor[textures]" pykotor texture-convert texture_a.png texture_b.png --overwrite
+```
+
 GUI (omit paths or pass `--gui`):
 
 ```bash
